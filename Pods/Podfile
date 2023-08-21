@@ -1,0 +1,27 @@
+use_frameworks!
+
+platform :ios, '12.0'
+#inhibit_all_warnings!
+
+workspace '../XZML.xcworkspace'
+project '../Example/Example.xcodeproj'
+
+target 'Example' do
+
+  pod 'XZML', :path => '../'
+
+  pod 'SDWebImage'
+  pod 'YYModel'
+  pod 'AFNetworking'
+  
+  target 'ExampleTests' do
+    inherit! :search_paths
+    
+  end
+
+  target 'ExampleUITests' do
+    inherit! :search_paths
+    
+  end
+
+end
