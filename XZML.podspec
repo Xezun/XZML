@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'XZML'
-  s.version          = '1.0.0'
+  s.version          = '1.1.0'
   s.summary          = 'XZML 富文本描述语言'
 
 # This description is used to generate tags and improve search results.
@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   s.source           = { :git => 'https://github.com/Xezun/XZML.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '11.0'
+  s.ios.deployment_target = '12.0'
   s.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'XZ_FRAMEWORK=1' }
   s.dependency 'XZExtensions/UIColor'
   s.dependency 'XZExtensions/NSString'
