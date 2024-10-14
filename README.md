@@ -1,6 +1,6 @@
 # XZML
 
-[![CI Status](https://img.shields.io/travis/xezun/XZML.svg?style=flat)](https://travis-ci.org/xezun/XZML)
+[![CI Status](https://img.shields.io/badge/Build-pass-brightgreen.svg)](https://cocoapods.org/pods/XZML)
 [![Version](https://img.shields.io/cocoapods/v/XZML.svg?style=flat)](https://cocoapods.org/pods/XZML)
 [![License](https://img.shields.io/cocoapods/l/XZML.svg?style=flat)](https://cocoapods.org/pods/XZML)
 [![Platform](https://img.shields.io/cocoapods/p/XZML.svg?style=flat)](https://cocoapods.org/pods/XZML)
@@ -13,7 +13,7 @@ To run the example project, clone the repo, and run `pod install` from the Pods 
 
 ## 版本需求 Requirements
 
-iOS 11.0, Xcode 14.0
+iOS 12.0, Xcode 14.0
 
 ## 安装使用 Installation
 
@@ -27,9 +27,9 @@ pod 'XZML'
 
 ## 背景
 
-XZML是一款轻量级的富文本标记语言，是为解决在iOS开发中，富文本构造过程繁琐、不支持后端下发的问题而研发。
+XZML 是一款轻量级的富文本标记语言，可以解决在iOS开发中，富文本构造过程繁琐、以及不支持后端下发等问题。
 
-## 效果
+## 示例
 
 | XZML | 效果 | 说明 |
 |:--|:--|:--|
@@ -92,10 +92,9 @@ XZML 使用**固定格式**且简化的文本作为`样式值`，多属性样式
 | ~  | 超链接 | URL  | | | `<https://www.xezun.com/~打开Xezun官网>` |
 | ^  | 文本段落 | `属性值` + `属性标记` | | | `<20H30M^最小行高20点，最大行高30点的段落>` |
 
-【属性默认值】
+【属性预设值】
 
-在实际开发中，要用的富文本可能会包含各种各样的样式，但是固定地方使用的富文本，往往是固定样式或少量可配置样式，
-因此没有必要所有的样式都需要下发，在编码时，如果设置好默认值，则可以大大降低XZML的长度和复杂度。
+在实际开发中，可使用预设值，降低 XZML 的复杂度。
 
 ```objc
 [textLabel setAttributedTextWithXZMLString:@"文本甲 <&文本乙> <宋体&文本丙>" defaultAttributes:@{
@@ -111,7 +110,7 @@ XZML 使用**固定格式**且简化的文本作为`样式值`，多属性样式
 | 字体   | XZMLFontAttributeName 指定字体，继承字号 | 作为字体名，与默认字号相同      |
 | 颜色   | XZMLForegroundColorAttributeName      | 作为前景色，无背景色           |
 | 删除线 | 单删除线                   | 作为删除线样式，与前景色相同     |
-| 隐私   | 4个星星                   | 作为星星的数量，与前景色相同     |
+| 安全   | 4个星星                   | 作为星星的数量，与前景色相同     |
 
 【简化字体名】
 
