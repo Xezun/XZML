@@ -45,12 +45,12 @@ enum : XZMLAttribute {
     /// @discussion 比如设置删除线样式，上层设置删除线样式会被覆盖，但是上层的下划线样式会保留。
     /// @discussion 可以使用两个`$`可同时指定下划线和删除线。
     XZMLAttributeDecoration = '$',
-    /// 安全模式下需用替代字符占位的文本样式。
+    /// 隐私模式下需用替代字符占位的文本样式。
     /// 格式：替代符号、@重复次数、替代符号@重复次数。
     /// @discussion 替代符号默认为`*`星号，重复次数为4次，即4个`*`星号。
-    /// @discussion 安全模式替换时，忽略所有子元素。
-    /// @attention 在安全模式下，星号`*`之后样式、文本、子元素都会被忽略，因此通过`*`的位置控制替代字符的样式。
-    /// @discussion 比如将删除线样式放在`*`之后，安全模式下，替代字符不会展示删除线。
+    /// @discussion 隐私模式替换时，忽略所有子元素。
+    /// @attention 在隐私模式下，星号`*`之后样式、文本、子元素都会被忽略，因此通过`*`的位置控制替代字符的样式。
+    /// @discussion 比如将删除线样式放在`*`之后，隐私模式下，替代字符不会展示删除线。
     XZMLAttributeSecurity = '*',
     /// 超链接。
     /// @discussion 将使用 NSURL 或 NSString 创建富文本 NSLinkAttributeName 属性。
@@ -101,8 +101,8 @@ FOUNDATION_EXPORT NSAttributedStringKey const XZMLForegroundColorAttributeName;
 /// @discussion 值为代表背景色的 UIColor 对象。
 /// @discussion 设置（未被颜色标记修饰的文本的）默认字体直接使用 NSBackgroundColorAttributeName 属性名。
 FOUNDATION_EXPORT NSAttributedStringKey const XZMLBackgroundColorAttributeName;
-/// 通过此属性名指定 XZML 解析时安全模式。
-/// @discussion 值为布尔值，YES 表示当前为安全模式，NO 为非安全模式。
+/// 通过此属性名指定 XZML 解析时隐私模式。
+/// @discussion 值为布尔值，YES 表示当前为隐私模式，NO 为非隐私模式。
 FOUNDATION_EXPORT NSAttributedStringKey const XZMLSecurityAttributeName;
 
 @interface XZMLParser : NSObject
@@ -125,7 +125,7 @@ FOUNDATION_EXPORT NSAttributedStringKey const XZMLSecurityAttributeName;
 /// 解析 XZML 为纯文本。
 /// @param XZMLString XZML 字符串
 /// @param string 接收 XZML 中纯文本的对象
-/// @param defaultAttributes 默认属性，比如在安全模式下，会得到被替换的字符
+/// @param defaultAttributes 默认属性，比如在隐私模式下，会得到被替换的字符
 - (void)parse:(NSString *)XZMLString string:(NSMutableString *)string defaultAttributes:(nullable NSDictionary<NSAttributedStringKey, id> *)defaultAttributes;
 
 // MARK: - 事件方法
