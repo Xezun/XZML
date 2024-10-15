@@ -24,7 +24,7 @@
     if ([self isKindOfClass:NSMutableAttributedString.class]) {
         self = [self init];
         if (self) {
-            [[XZMLParser new] parse:XZMLString attributedString:(id)self defaultAttributes:defaultAttributes];
+            [XZMLParser attributedString:(id)self parse:XZMLString attributes:defaultAttributes];
         }
         return self;
     }
@@ -65,7 +65,7 @@
     if ([self isKindOfClass:NSMutableString.class]) {
         self = [self init];
         if (self) {
-            [XZMLParser.new parse:XZMLString string:(id)self defaultAttributes:defaultAttributes];
+            [XZMLParser string:(id)self parse:XZMLString attributes:defaultAttributes];
         }
         return self;
     }

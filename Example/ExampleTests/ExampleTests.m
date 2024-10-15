@@ -37,7 +37,7 @@
 
 - (void)testXZMLToString {
     NSString *string = [NSString stringWithXZMLString:@"日利率 <*0.02%>" defaultAttributes:@{
-        XZMLSecurityAttributeName: @(YES)
+        XZMLPrivacyAttributeName: @(YES)
     }];
     XCTAssert([string isEqualToString:@"日利率 ****"]);
 }
@@ -112,11 +112,11 @@
     [self measureBlock:^{
         for (NSInteger i = 0; i < 10000; i++) {
             NSMutableAttributedString *attributedString1 = [[NSMutableAttributedString alloc] init];
-            [pareser parse:xmml1 attributedString:attributedString1 defaultAttributes:attributes];
+            [pareser parse:xmml1 attributedString:attributedString1 attributes:attributes];
             [arrayM addObject:attributedString1];
             
             NSMutableAttributedString *attributedString2 = [[NSMutableAttributedString alloc] init];
-            [pareser parse:xmml2 attributedString:attributedString2 defaultAttributes:attributes];
+            [pareser parse:xmml2 attributedString:attributedString2 attributes:attributes];
             [arrayM addObject:attributedString2];
         }
     }];

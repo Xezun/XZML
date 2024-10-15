@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param XZMLString XZML 字符串
 /// @param defaultAttributes 默认属性
 - (instancetype)initWithXZMLString:(nullable NSString *)XZMLString defaultAttributes:(nullable NSDictionary<NSString *, id> *)defaultAttributes;
+//- (instancetype)initWithXZMLString:(nullable NSString *)XZMLString defaultAttributes:(nullable NSDictionary<NSString *, id> *)defaultAttributes;
 @end
 
 @interface NSAttributedString (XZML)

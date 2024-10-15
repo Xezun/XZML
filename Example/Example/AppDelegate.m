@@ -6,6 +6,7 @@
 //
 
 #import "AppDelegate.h"
+@import XZML;
 
 @interface AppDelegate ()
 
@@ -15,7 +16,13 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    [XZMLParser setFontName:@"AmericanTypewriter" forAbbreviation:@"D"];
+    [XZMLParser setFontName:@"AmericanTypewriter-Bold" forAbbreviation:@"B"];
+    
+    [XZMLParser setFontName:@"PingFangSC-Light" forAbbreviation:@"L"];
+    [XZMLParser setFontName:@"PingFangSC-Regular" forAbbreviation:@"T"];
+    [XZMLParser setFontName:@"PingFangSC-Medium" forAbbreviation:@"M"];
+    [XZMLParser setFontName:@"PingFangSC-Semibold" forAbbreviation:@"S"];
     return YES;
 }
 
