@@ -39,12 +39,14 @@
         XZMLBackgroundColorAttributeName: UIColor.purpleColor,
     };
     
-    NSMutableAttributedString *attributedText = [[NSAttributedString alloc] initWithXZMLString:self.XZMLString attributes:attributes];
-    self.textView.attributedText = attributedText;
+    [self.textView setXZMLText:self.XZMLString attributes:attributes];
 }
 
 - (BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction {
-    NSLog(@"点击了链接: %@ %@", URL, NSStringFromRange(characterRange));
+    NSString *message = [NSString stringWithFormat:@"点击了链接: %@ %@", URL, NSStringFromRange(characterRange)];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"温馨提示" message:message preferredStyle:(UIAlertControllerStyleAlert)];
+    [alert addAction:[UIAlertAction actionWithTitle:@"确定" style:(UIAlertActionStyleDefault) handler:nil]];
+    [self presentViewController:alert animated:YES completion:nil];
     return NO;
 }
 

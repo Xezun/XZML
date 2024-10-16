@@ -371,7 +371,7 @@ XZMLDSLMode XZMLAttributeSecurityParser(NSMutableDictionary<NSAttributedStringKe
                 attributes[XZMLSecurityMarkAttributeName] = mark;
             }
             
-            NSInteger  const repeat = [values[1] xz_integerValue:4 base:10];
+            NSInteger const repeat = [values[1] xz_integerValue:4 base:10];
             if (repeat > 0) {
                 attributes[XZMLSecurityRepeatAttributeName] = @(repeat);
                 return XZMLDSLModeNone;
@@ -380,6 +380,10 @@ XZMLDSLMode XZMLAttributeSecurityParser(NSMutableDictionary<NSAttributedStringKe
             NSString * const mark = value;
             if (mark.length > 0) {
                 attributes[XZMLSecurityMarkAttributeName] = mark;
+                // 多字符的安全符，默认重复 1 次
+                if ([mark rangeOfComposedCharacterSequenceAtIndex:0].length < mark.length) {
+                    attributes[XZMLSecurityRepeatAttributeName] = @(1);
+                }
             }
             return XZMLDSLModeText;
         }
