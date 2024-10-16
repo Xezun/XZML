@@ -12,7 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// @attention 新增枚举请同时调整 NSCharacterSet.XZMLCharacterSet 字符集。
 enum : XZMLStyle {
-    /// 文本前景色、背景色样式。
+    
+    /// 颜色样式：文本前景色、文本背景色。
     /// 格式：前景色、@背景色、前景色@背景色
     /// @discussion 颜色使用十六进制 RGB/RGBA 值。
     /// @discussion 1、仅前景色（无`@`符号）时，表示仅设置前景色，背景色继承上层。
@@ -21,7 +22,8 @@ enum : XZMLStyle {
     /// @discussion 4、解析颜色时，以`defaultAttributes`设置的值作为默认值，如没有设置默认值，则不处理。
     /// @discussion 5、通过键名 XZMLForegroundColorAttributeName、XZMLBackgroundColorAttributeName 设置默认值。
     XZMLStyleColor = '#',
-    /// 文本字体字号样式。
+    
+    /// 字体样式：字体、字号、样式。
     /// 格式：字体、@字号、字体@字号、字体@字号@基准线偏移
     /// @discussion 使用 XZMLFontAttributeName 设置解析时的默认字号。
     /// @discussion 1、仅指定字体时，按根据上层字体、默认解析字体、默认字体的先后顺序继承字号，找不到字号不处理；
@@ -36,6 +38,7 @@ enum : XZMLStyle {
     /// @discussion 5、文本中等：TM、M
     /// @discussion 6、文本中粗：TS、S
     XZMLStyleFont = '&',
+    
     /// 文本修饰样式。
     /// 格式：样式、样式@线型、样式@线型@颜色
     /// @discussion【样式】0，删除线（默认）；1，下划线
@@ -45,16 +48,19 @@ enum : XZMLStyle {
     /// @discussion 比如设置删除线样式，上层设置删除线样式会被覆盖，但是上层的下划线样式会保留。
     /// @discussion 可以使用两个`$`可同时指定下划线和删除线。
     XZMLStyleDecoration = '$',
-    /// 隐私模式下需用替代字符占位的文本样式。
+    
+    /// 隐私模式：用占位字符替代隐私文本的样式。
     /// 格式：替代符号、@重复次数、替代符号@重复次数。
     /// @discussion 替代符号默认为`*`星号，重复次数为4次，即4个`*`星号。
     /// @discussion 隐私模式替换时，忽略所有子元素。
     /// @attention 在隐私模式下，星号`*`之后样式、文本、子元素都会被忽略，因此通过`*`的位置控制替代字符的样式。
     /// @discussion 比如将删除线样式放在`*`之后，隐私模式下，替代字符不会展示删除线。
     XZMLStylePrivacy = '*',
-    /// 超链接。
+    
+    /// 超链接样式。
     /// @discussion 将使用 NSURL 或 NSString 创建富文本 NSLinkAttributeName 属性。
     XZMLStyleLink = '~',
+    
     /// 段落样式。
     /// @discussion 支持的段落属性包括：
     /// @discussion H：minimumLineHeight 最小行高，默认
@@ -79,28 +85,33 @@ enum : XZMLStyle {
     /// @endcode
     /// @discussion 由于样式标记的存在，样式间隔符`@`是可选的，样式顺序也是任意的。
     XZMLStyleParagraph = '^',
+    
 };
 
 @interface NSCharacterSet (XZML)
 /// XZML 的标记字符集。
 /// @attention 新增 XZML 标记需更新此字符集。
 @property (class, readonly) NSCharacterSet *XZMLCharacterSet;
+/// 更新 XZML 标记符集。
+/// @param aString 包含新增 XZML 标记符的字符串
++ (void)addXZMLCharactersInString:(NSString *)aString;
 @end
-
-@class XZMLParser;
 
 /// 通过此属性名指定 XZML 解析时的默认字体。
 /// @discussion 值为 UIFont 对象。
 /// @discussion 设置（未被字体标记修饰的文本的）默认字体直接使用 NSFontAttributeName 属性名。
 FOUNDATION_EXPORT NSAttributedStringKey const XZMLFontAttributeName;
+
 /// 通过此属性名指定 XZML 解析时的默认前景色。
 /// @discussion 值为代表前景色的 UIColor 对象。
 /// @discussion 设置（未被颜色标记修饰的文本的）默认字体直接使用 NSForegroundColorAttributeName 属性名。
 FOUNDATION_EXPORT NSAttributedStringKey const XZMLForegroundColorAttributeName;
+
 /// 通过此属性名指定 XZML 解析时的默认背景色。
 /// @discussion 值为代表背景色的 UIColor 对象。
 /// @discussion 设置（未被颜色标记修饰的文本的）默认字体直接使用 NSBackgroundColorAttributeName 属性名。
 FOUNDATION_EXPORT NSAttributedStringKey const XZMLBackgroundColorAttributeName;
+
 /// 通过此属性名指定 XZML 解析时隐私模式。
 /// @discussion 值为布尔值，YES 表示当前为隐私模式，NO 为非隐私模式。
 FOUNDATION_EXPORT NSAttributedStringKey const XZMLPrivacyAttributeName;

@@ -9,39 +9,29 @@
 
 @implementation NSAttributedString (XZML)
 
-+ (instancetype)attributedStringWithXZMLString:(nullable NSString *)XZMLString defaultAttributes:(nullable NSDictionary<NSString *, id> *)defaultAttributes {
-    return [[self alloc] initWithXZMLString:XZMLString defaultAttributes:defaultAttributes];
-}
-
-+ (instancetype)attributedStringWithXZMLString:(NSString *)XZMLString {
-    return [self attributedStringWithXZMLString:XZMLString defaultAttributes:nil];
-}
-
-- (instancetype)initWithXZMLString:(NSString *)XZMLString defaultAttributes:(NSDictionary<NSString *,id> *)defaultAttributes {
-    if (XZMLString == nil) {
-        return [self init];
-    }
-    if ([self isKindOfClass:NSMutableAttributedString.class]) {
-        self = [self init];
-        if (self) {
-            [XZMLParser attributedString:(id)self parse:XZMLString attributes:defaultAttributes];
-        }
-        return self;
-    }
-    id const attributedString = [[NSMutableAttributedString alloc] initWithXZMLString:XZMLString defaultAttributes:defaultAttributes];
+- (instancetype)initWithXZMLString:(NSString *)XZMLString attributes:(nullable NSDictionary<NSString *,id> *)attributes {
+    NSMutableAttributedString * const attributedString = [[NSMutableAttributedString alloc] initWithXZMLString:XZMLString attributes:attributes];
     return [self initWithAttributedString:attributedString];
 }
 
 - (instancetype)initWithXZMLString:(NSString *)XZMLString {
-    return [self initWithXZMLString:XZMLString defaultAttributes:nil];
+    return [self initWithXZMLString:XZMLString attributes:nil];
 }
 
 @end
 
 @implementation NSMutableAttributedString (XZML)
 
-- (void)appendAttributedStringWithXZMLString:(NSString *)XZMLString defaultAttributes:(nullable NSDictionary<NSString *,id> *)defaultAttributes {
-    NSMutableAttributedString * const attributedString = [[NSMutableAttributedString alloc] initWithXZMLString:XZMLString defaultAttributes:defaultAttributes];
+- (instancetype)initWithXZMLString:(NSString *)XZMLString attributes:(NSDictionary<NSString *,id> *)attributes {
+    self = [self init];
+    if (self) {
+        [XZMLParser attributedString:self parse:XZMLString attributes:attributes];
+    }
+    return self;
+}
+
+- (void)appendXZMLString:(NSString *)XZMLString attributes:(nullable NSDictionary<NSString *,id> *)defaultAttributes {
+    NSMutableAttributedString * const attributedString = [[NSMutableAttributedString alloc] initWithXZMLString:XZMLString attributes:defaultAttributes];
     [self appendAttributedString:attributedString];
 }
 
@@ -50,31 +40,13 @@
 
 @implementation NSString (XZML)
 
-+ (instancetype)stringWithXZMLString:(NSString *)XZMLString defaultAttributes:(NSDictionary<NSAttributedStringKey,id> *)defaultAttributes {
-    return [[self alloc] initWithXZMLString:XZMLString defaultAttributes:defaultAttributes];
-}
-
-+ (instancetype)stringWithXZMLString:(NSString *)XZMLString {
-    return [self stringWithXZMLString:XZMLString defaultAttributes:nil];
-}
-
-- (instancetype)initWithXZMLString:(NSString *)XZMLString defaultAttributes:(NSDictionary<NSAttributedStringKey,id> *)defaultAttributes {
-    if (XZMLString == nil) {
-        return [self init];
-    }
-    if ([self isKindOfClass:NSMutableString.class]) {
-        self = [self init];
-        if (self) {
-            [XZMLParser string:(id)self parse:XZMLString attributes:defaultAttributes];
-        }
-        return self;
-    }
-    NSMutableString *string = [NSMutableString stringWithXZMLString:XZMLString defaultAttributes:defaultAttributes];
+- (instancetype)initWithXZMLString:(NSString *)XZMLString attributes:(nullable NSDictionary<NSString *,id> *)attributes {
+    NSMutableString *string = [[NSMutableString alloc] initWithXZMLString:XZMLString attributes:attributes];
     return [self initWithString:string];
 }
 
 - (instancetype)initWithXZMLString:(NSString *)XZMLString {
-    return [self initWithXZMLString:XZMLString defaultAttributes:nil];
+    return [self initWithXZMLString:XZMLString attributes:nil];
 }
 
 - (NSMutableString *)stringByEscapingXZMLCharacters {
@@ -102,6 +74,14 @@
 @end
 
 @implementation NSMutableString (XZML)
+
+- (instancetype)initWithXZMLString:(NSString *)XZMLString attributes:(nullable NSDictionary<NSString *,id> *)attributes {
+    self = [self init];
+    if (self) {
+        [XZMLParser string:self parse:XZMLString attributes:attributes];
+    }
+    return self;
+}
 
 @end
 

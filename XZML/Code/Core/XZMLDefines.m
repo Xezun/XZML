@@ -18,9 +18,16 @@ NSAttributedStringKey const XZMLPrivacyAttributeName         = @"XZMLPrivacyAttr
     static NSCharacterSet *_characterSet = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        _characterSet = [NSCharacterSet characterSetWithCharactersInString:@"<@#&$*~^>"];
+        _characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"<@#&$*~^>"];
     });
     return _characterSet;
+}
+
++ (void)addXZMLCharactersInString:(NSString *)aString {
+    @synchronized (self) {
+        NSMutableCharacterSet *set = (id)NSCharacterSet.XZMLCharacterSet;
+        [set addCharactersInString:aString];
+    }
 }
 
 @end

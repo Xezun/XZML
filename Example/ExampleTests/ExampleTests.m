@@ -85,10 +85,10 @@
     // iPhone 12 Pro: 0.193、0.194、0.193
     [self measureBlock:^{
         for (NSInteger i = 0; i < 10000; i++) {
-            NSAttributedString *attributedString1 = [[NSMutableAttributedString alloc] initWithXZMLString:xmml1 defaultAttributes:attributes];
+            NSAttributedString *attributedString1 = [[NSMutableAttributedString alloc] initWithXZMLString:xmml1 attributes:attributes];
             [arrayM addObject:attributedString1];
             
-            NSAttributedString *attributedString2 = [[NSMutableAttributedString alloc] initWithXZMLString:xmml2 defaultAttributes:attributes];
+            NSAttributedString *attributedString2 = [[NSMutableAttributedString alloc] initWithXZMLString:xmml2 attributes:attributes];
             [arrayM addObject:attributedString2];
         }
     }];
@@ -138,7 +138,7 @@
     // iPhone 12 Pro: 0.087
     [self measureBlock:^{
         for (NSInteger i = 0; i < 100; i++) {
-            NSAttributedString *attributedString1 = [[NSMutableAttributedString alloc] initWithXZMLString:xmml1 defaultAttributes:attributes];
+            NSAttributedString *attributedString1 = [[NSMutableAttributedString alloc] initWithXZMLString:xmml1 attributes:attributes];
             [arrayM addObject:attributedString1];
         }
     }];

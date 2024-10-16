@@ -9,18 +9,23 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UILabel (XZML)
+@protocol XZMLTextView <NSObject>
+- (void)setXZMLText:(nullable NSString *)XZMLString attributes:(nullable NSDictionary<NSString *, id> *)attributes;
+- (void)setXZMLText:(nullable NSString *)XZMLString;
+@end
 
-- (void)setAttributedTextWithXZMLString:(nullable NSString *)XZMLString defaultAttributes:(nullable NSDictionary<NSString *, id> *)defaultAttributes;
-- (void)setAttributedTextWithXZMLString:(nullable NSString *)XZMLString;
-
+@interface UILabel (XZML) <XZMLTextView>
 @end
 
 @interface UIButton (XZML)
+- (void)setXZMLTitle:(nullable NSString *)XZMLString forState:(UIControlState)state attributes:(nullable NSDictionary<NSString *, id> *)attributes;
+- (void)setXZMLTitle:(nullable NSString *)XZMLString forState:(UIControlState)state;
+@end
 
-- (void)setAttributedTitleWithXZMLString:(nullable NSString *)XZMLString forState:(UIControlState)state defaultAttributes:(nullable NSDictionary<NSString *, id> *)defaultAttributes;
-- (void)setAttributedTitleWithXZMLString:(nullable NSString *)XZMLString forState:(UIControlState)state;
+@interface UITextView (XZML) <XZMLTextView>
+@end
 
+@interface UITextField (XZML) <XZMLTextView>
 @end
 
 NS_ASSUME_NONNULL_END
