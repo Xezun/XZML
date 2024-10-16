@@ -10,7 +10,9 @@
 NSAttributedStringKey const XZMLFontAttributeName            = @"XZMLFontAttributeName";
 NSAttributedStringKey const XZMLForegroundColorAttributeName = @"XZMLForegroundColorAttributeName";
 NSAttributedStringKey const XZMLBackgroundColorAttributeName = @"XZMLBackgroundColorAttributeName";
-NSAttributedStringKey const XZMLPrivacyAttributeName         = @"XZMLPrivacyAttributeName";
+NSAttributedStringKey const XZMLSecurityModeAttributeName    = @"XZMLSecurityModeAttributeName";
+NSAttributedStringKey const XZMLSecurityMarkAttributeName    = @"XZMLSecurityMarkAttributeName";
+NSAttributedStringKey const XZMLSecurityRepeatAttributeName  = @"XZMLSecurityRepeatAttributeName";
 
 @implementation NSCharacterSet (XZML)
 

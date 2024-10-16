@@ -12,7 +12,7 @@
 @interface ViewController () <UITextViewDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *textLabel;
 @property (weak, nonatomic) IBOutlet UITextView *textView;
-@property (weak, nonatomic) IBOutlet UISwitch *privacyModeSwitch;
+@property (weak, nonatomic) IBOutlet UISwitch *securityModeSwitch;
 @end
 
 @implementation ViewController
@@ -27,14 +27,14 @@
     self.textView.linkTextAttributes = @{ };
     self.textView.delegate           = self;
     
-    [self securitySwitchAction:self.privacyModeSwitch];
+    [self securitySwitchAction:self.securityModeSwitch];
 }
 
 - (IBAction)securitySwitchAction:(UISwitch *)sender {
     id const attributes = @{
         NSFontAttributeName: [UIFont fontWithName:@"PingFangSC-Regular" size:17.0],
         XZMLFontAttributeName: [UIFont fontWithName:@"AmericanTypewriter" size:17.0],
-        XZMLPrivacyAttributeName: @(self.privacyModeSwitch.isOn),
+        XZMLSecurityModeAttributeName: @(self.securityModeSwitch.isOn),
         XZMLForegroundColorAttributeName: UIColor.orangeColor,
         XZMLBackgroundColorAttributeName: UIColor.purpleColor,
     };

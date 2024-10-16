@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// @attention 新增枚举请同时调整 NSCharacterSet.XZMLCharacterSet 字符集。
-enum : XZMLStyle {
+enum : XZMLAttribute {
     
     /// 颜色样式：文本前景色、文本背景色。
     /// 格式：前景色、@背景色、前景色@背景色
@@ -21,7 +21,7 @@ enum : XZMLStyle {
     /// @discussion 3、其它情形，表示示同时指定前景色和背景色。
     /// @discussion 4、解析颜色时，以`defaultAttributes`设置的值作为默认值，如没有设置默认值，则不处理。
     /// @discussion 5、通过键名 XZMLForegroundColorAttributeName、XZMLBackgroundColorAttributeName 设置默认值。
-    XZMLStyleColor = '#',
+    XZMLAttributeColor = '#',
     
     /// 字体样式：字体、字号、样式。
     /// 格式：字体、@字号、字体@字号、字体@字号@基准线偏移
@@ -37,7 +37,7 @@ enum : XZMLStyle {
     /// @discussion 4、文本常规：TR、T
     /// @discussion 5、文本中等：TM、M
     /// @discussion 6、文本中粗：TS、S
-    XZMLStyleFont = '&',
+    XZMLAttributeFont = '&',
     
     /// 文本修饰样式。
     /// 格式：样式、样式@线型、样式@线型@颜色
@@ -47,19 +47,19 @@ enum : XZMLStyle {
     /// @attention 文本修饰，包含多个样式，因此使用属性默认值解析，设置文本修饰样式，只会覆盖上层相同样式的设置。
     /// @discussion 比如设置删除线样式，上层设置删除线样式会被覆盖，但是上层的下划线样式会保留。
     /// @discussion 可以使用两个`$`可同时指定下划线和删除线。
-    XZMLStyleDecoration = '$',
+    XZMLAttributeDecoration = '$',
     
-    /// 隐私模式：用占位字符替代隐私文本的样式。
+    /// 安全文本样式：用占位字符替代目标文本的样式。
     /// 格式：替代符号、@重复次数、替代符号@重复次数。
     /// @discussion 替代符号默认为`*`星号，重复次数为4次，即4个`*`星号。
-    /// @discussion 隐私模式替换时，忽略所有子元素。
-    /// @attention 在隐私模式下，星号`*`之后样式、文本、子元素都会被忽略，因此通过`*`的位置控制替代字符的样式。
-    /// @discussion 比如将删除线样式放在`*`之后，隐私模式下，替代字符不会展示删除线。
-    XZMLStylePrivacy = '*',
+    /// @discussion 安全模式替换时，忽略所有子元素。
+    /// @attention 在安全模式下，星号`*`之后样式、文本、子元素都会被忽略，因此通过`*`的位置控制替代字符的样式。
+    /// @discussion 比如将删除线样式放在`*`之后，安全模式下，替代字符不会展示删除线。
+    XZMLAttributeSecurity = '*',
     
     /// 超链接样式。
     /// @discussion 将使用 NSURL 或 NSString 创建富文本 NSLinkAttributeName 属性。
-    XZMLStyleLink = '~',
+    XZMLAttributeLink = '~',
     
     /// 段落样式。
     /// @discussion 支持的段落属性包括：
@@ -84,7 +84,7 @@ enum : XZMLStyle {
     /// NSString *XZML4 = @"<34F20X^Paragraph>";   // 首行缩进 34.0 point 行高 20.0 point
     /// @endcode
     /// @discussion 由于样式标记的存在，样式间隔符`@`是可选的，样式顺序也是任意的。
-    XZMLStyleParagraph = '^',
+    XZMLAttributeParagraph = '^',
     
 };
 
@@ -112,9 +112,15 @@ FOUNDATION_EXPORT NSAttributedStringKey const XZMLForegroundColorAttributeName;
 /// @discussion 设置（未被颜色标记修饰的文本的）默认字体直接使用 NSBackgroundColorAttributeName 属性名。
 FOUNDATION_EXPORT NSAttributedStringKey const XZMLBackgroundColorAttributeName;
 
-/// 通过此属性名指定 XZML 解析时隐私模式。
-/// @discussion 值为布尔值，YES 表示当前为隐私模式，NO 为非隐私模式。
-FOUNDATION_EXPORT NSAttributedStringKey const XZMLPrivacyAttributeName;
+/// 通过此属性名指定 XZML 解析时安全模式。
+/// @discussion 值为布尔值，YES 表示当前为安全模式，NO 为非安全模式。
+FOUNDATION_EXPORT NSAttributedStringKey const XZMLSecurityModeAttributeName;
+
+/// 安全文本替代字符。
+FOUNDATION_EXPORT NSAttributedStringKey const XZMLSecurityMarkAttributeName;
+
+/// 安全文本替代字符重复次数。
+FOUNDATION_EXPORT NSAttributedStringKey const XZMLSecurityRepeatAttributeName;
 
 
 NS_ASSUME_NONNULL_END

@@ -37,7 +37,7 @@
 
 - (void)testXZMLToString {
     NSString *string = [NSString stringWithXZMLString:@"日利率 <*0.02%>" defaultAttributes:@{
-        XZMLPrivacyAttributeName: @(YES)
+        XZMLSecurityModeAttributeName: @(YES)
     }];
     XCTAssert([string isEqualToString:@"日利率 ****"]);
 }

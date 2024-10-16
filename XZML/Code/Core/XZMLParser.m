@@ -9,14 +9,14 @@
 @import XZExtensions;
 
 // 样式解析：返回值表示为是否跳过当前元素。
-static NSAttributedString * _Nullable XZMLStyleFontParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
-static NSAttributedString * _Nullable XZMLStyleColorParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
-static NSAttributedString * _Nullable XZMLStyleDecorationParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
-static NSAttributedString * _Nullable XZMLStylePrivacyParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
-static NSAttributedString * _Nullable XZMLStyleLinkParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
-static NSAttributedString * _Nullable XZMLStyleParagraphParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
+static NSAttributedString * _Nullable XZMLAttributeFontParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
+static NSAttributedString * _Nullable XZMLAttributeColorParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
+static NSAttributedString * _Nullable XZMLAttributeDecorationParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
+static NSAttributedString * _Nullable XZMLAttributeSecurityParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
+static NSAttributedString * _Nullable XZMLAttributeLinkParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
+static NSAttributedString * _Nullable XZMLAttributeParagraphParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
 // 样式属性解析：从安全属性值获取安全字符。
-static NSString *XZMLStylePrivacyTextParser(XZMLElement element, NSString *value);
+static NSString *XZMLAttributeSecurityTextParser(XZMLElement element, NSString *value);
 
 @implementation XZMLParser
 
@@ -30,7 +30,7 @@ static NSString *XZMLStylePrivacyTextParser(XZMLElement element, NSString *value
         return [self shouldBeginElement:character];
     }, ^BOOL(XZMLElement const element, char const character) {
         // 识别元素属性
-        return [self element:element shouldBeginStyle:character];
+        return [self element:element shouldBeginAttribute:character];
     }, ^(XZMLElement const element) {
         // 开始识别元素
         id const attributes = _elementAttributes.lastObject.mutableCopy;
@@ -39,7 +39,7 @@ static NSString *XZMLStylePrivacyTextParser(XZMLElement element, NSString *value
     }, ^BOOL(XZMLElement const element, XZMLElement const attribute, NSString *value) {
         // 解析元素属性
         id const attributes = _elementAttributes.lastObject;
-        NSAttributedString *elementString = [self element:element didRecognizeStyle:attribute value:value attributes:attributes];
+        NSAttributedString *elementString = [self element:element didEndAttribute:attribute value:value attributes:attributes];
         if (elementString != nil) {
             [attributedString appendAttributedString:elementString];
             return NO;
@@ -48,7 +48,7 @@ static NSString *XZMLStylePrivacyTextParser(XZMLElement element, NSString *value
     }, ^(XZMLElement element, NSString * _Nonnull text, NSUInteger fragment) {
         // 获得元素文本
         id const attributes = _elementAttributes.lastObject;
-        NSAttributedString *elementString = [self element:element didRecognizeText:text fragment:fragment attributes:attributes];
+        NSAttributedString *elementString = [self element:element didEndText:text fragment:fragment attributes:attributes];
         if (attributedString) {
             [attributedString appendAttributedString:elementString];
         }
@@ -66,17 +66,17 @@ static NSString *XZMLStylePrivacyTextParser(XZMLElement element, NSString *value
 }
 
 + (void)string:(NSMutableString *)string parse:(NSString *)XZMLString attributes:(NSDictionary<NSAttributedStringKey,id> *)attributes {
-    BOOL const _privacy = [attributes[XZMLPrivacyAttributeName] boolValue];
+    BOOL const _securityMode = [attributes[XZMLSecurityModeAttributeName] boolValue];
 
     XZMLDSL(XZMLString, ^XZMLElement(char character) {
         return [self shouldBeginElement:character];
     }, ^BOOL(XZMLElement element, char character) {
-        return [self element:element shouldBeginStyle:character];
+        return [self element:element shouldBeginAttribute:character];
     }, ^(XZMLElement element) {
         // 元素开始
     }, ^BOOL(XZMLElement element, XZMLElement attribute, NSString *value) {
-        if (_privacy && attribute == XZMLStylePrivacy) {
-            NSString *secureText = XZMLStylePrivacyTextParser(element, value);
+        if (_securityMode && attribute == XZMLAttributeSecurity) {
+            NSString *secureText = XZMLAttributeSecurityTextParser(element, value);
             [string appendString:secureText];
             return NO;
         }
@@ -99,14 +99,14 @@ static NSString *XZMLStylePrivacyTextParser(XZMLElement element, NSString *value
     }
 }
 
-+ (BOOL)element:(XZMLElement)element shouldBeginStyle:(char)character {
++ (BOOL)element:(XZMLElement)element shouldBeginAttribute:(char)character {
     switch (character) {
-        case XZMLStyleColor:
-        case XZMLStyleFont:
-        case XZMLStyleDecoration:
-        case XZMLStylePrivacy:
-        case XZMLStyleLink:
-        case XZMLStyleParagraph:
+        case XZMLAttributeColor:
+        case XZMLAttributeFont:
+        case XZMLAttributeDecoration:
+        case XZMLAttributeSecurity:
+        case XZMLAttributeLink:
+        case XZMLAttributeParagraph:
             return YES;
         default:
             return NO;
@@ -117,25 +117,25 @@ static NSString *XZMLStylePrivacyTextParser(XZMLElement element, NSString *value
     
 }
 
-+ (nullable NSAttributedString *)element:(XZMLElement)element didRecognizeStyle:(XZMLStyle)attribute value:(NSString *)value attributes:(NSMutableDictionary<NSAttributedStringKey,id> *)attributes {
++ (nullable NSAttributedString *)element:(XZMLElement)element didEndAttribute:(XZMLAttribute)attribute value:(NSString *)value attributes:(NSMutableDictionary<NSAttributedStringKey,id> *)attributes {
     switch (attribute) {
-        case XZMLStyleColor: {
-            return XZMLStyleColorParser(attributes, element, value);
+        case XZMLAttributeColor: {
+            return XZMLAttributeColorParser(attributes, element, value);
         }
-        case XZMLStyleFont: {
-            return XZMLStyleFontParser(attributes, element, value);
+        case XZMLAttributeFont: {
+            return XZMLAttributeFontParser(attributes, element, value);
         }
-        case XZMLStyleDecoration: {
-            return XZMLStyleDecorationParser(attributes, element, value);
+        case XZMLAttributeDecoration: {
+            return XZMLAttributeDecorationParser(attributes, element, value);
         }
-        case XZMLStylePrivacy: {
-            return XZMLStylePrivacyParser(attributes, element, value);
+        case XZMLAttributeSecurity: {
+            return XZMLAttributeSecurityParser(attributes, element, value);
         }
-        case XZMLStyleLink: {
-            return XZMLStyleLinkParser(attributes, element, value);
+        case XZMLAttributeLink: {
+            return XZMLAttributeLinkParser(attributes, element, value);
         }
-        case XZMLStyleParagraph: {
-            return XZMLStyleParagraphParser(attributes, element, value);
+        case XZMLAttributeParagraph: {
+            return XZMLAttributeParagraphParser(attributes, element, value);
         }
         default: {
             NSLog(@"XZML：自定义属性 %c 暂不支持", attribute);
@@ -144,7 +144,7 @@ static NSString *XZMLStylePrivacyTextParser(XZMLElement element, NSString *value
     }
 }
 
-+ (nullable NSAttributedString *)element:(XZMLElement)element didRecognizeText:(NSString *)text fragment:(NSUInteger)fragment attributes:(NSMutableDictionary<NSAttributedStringKey,id> *)attributes {
++ (nullable NSAttributedString *)element:(XZMLElement)element didEndText:(NSString *)text fragment:(NSUInteger)fragment attributes:(NSMutableDictionary<NSAttributedStringKey,id> *)attributes {
     return [[NSAttributedString alloc] initWithString:text attributes:attributes];
 }
 
@@ -228,7 +228,7 @@ static void XZMLParserSetFontWithName(NSMutableDictionary<NSAttributedStringKey,
 
 #pragma mark - 样式解析
 
-NSAttributedString * _Nullable XZMLStyleColorParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
+NSAttributedString * _Nullable XZMLAttributeColorParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
     if ([value containsString:@"@"]) {
         NSArray<NSString *> * const values = [value componentsSeparatedByString:@"@"];
         UIColor *foregroundColor = nil;
@@ -257,7 +257,7 @@ NSAttributedString * _Nullable XZMLStyleColorParser(NSMutableDictionary<NSAttrib
     return nil;
 }
 
-NSAttributedString * _Nullable XZMLStyleFontParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
+NSAttributedString * _Nullable XZMLAttributeFontParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
     UIFont * const custom = attributes[XZMLFontAttributeName];
     UIFont * const parent = attributes[NSFontAttributeName];
     
@@ -305,7 +305,7 @@ NSAttributedString * _Nullable XZMLStyleFontParser(NSMutableDictionary<NSAttribu
     return nil;
 }
 
-NSAttributedString * _Nullable XZMLStyleDecorationParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
+NSAttributedString * _Nullable XZMLAttributeDecorationParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
     NSInteger style = 0;                             // 样式
     NSUnderlineStyle lines = NSUnderlineStyleSingle; // 线型
     UIColor *color = nil;                            // 颜色
@@ -356,17 +356,17 @@ NSAttributedString * _Nullable XZMLStyleDecorationParser(NSMutableDictionary<NSA
     return nil;
 }
 
-NSAttributedString * _Nullable XZMLStylePrivacyParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
+NSAttributedString * _Nullable XZMLAttributeSecurityParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
     // 安全模式下，整个元素用安全字符替换，并终止元素解析
-    if ([attributes[XZMLPrivacyAttributeName] boolValue]) {
-        NSString * const privateText = XZMLStylePrivacyTextParser(element, value);
-        return [[NSAttributedString alloc] initWithString:privateText attributes:attributes];
+    if ([attributes[XZMLSecurityModeAttributeName] boolValue]) {
+        NSString * const securityText = XZMLAttributeSecurityTextParser(element, value);
+        return [[NSAttributedString alloc] initWithString:securityText attributes:attributes];
     }
     // 非安全模式，不需要解析安全属性
     return nil;
 }
 
-NSAttributedString * _Nullable XZMLStyleLinkParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement element, NSString *value) {
+NSAttributedString * _Nullable XZMLAttributeLinkParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement element, NSString *value) {
     NSURL *url = [NSURL URLWithString:value];
     if (url != nil) {
         attributes[NSLinkAttributeName] = url;
@@ -376,7 +376,7 @@ NSAttributedString * _Nullable XZMLStyleLinkParser(NSMutableDictionary<NSAttribu
     return nil;
 }
 
-NSAttributedString * _Nullable XZMLStyleParagraphParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement element, NSString *value) {
+NSAttributedString * _Nullable XZMLAttributeParagraphParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement element, NSString *value) {
     if (value.length == 0) {
         return nil;
     }
@@ -498,7 +498,7 @@ NSAttributedString * _Nullable XZMLStyleParagraphParser(NSMutableDictionary<NSAt
 
 #pragma mark - 样式的属性解析
 
-static NSString *XZMLStylePrivacyTextParser(XZMLElement element, NSString *value) {
+static NSString *XZMLAttributeSecurityTextParser(XZMLElement element, NSString *value) {
     if ([value containsString:@"@"]) {
         NSArray<NSString *> * const values = [value componentsSeparatedByString:@"@"];
         
