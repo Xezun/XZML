@@ -39,7 +39,7 @@
         XZMLBackgroundColorAttributeName: UIColor.purpleColor,
     };
     
-    NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithXZMLString:self.XZMLString attributes:attributes];
+    NSMutableAttributedString *attributedText = [[NSAttributedString alloc] initWithXZMLString:self.XZMLString attributes:attributes];
     self.textView.attributedText = attributedText;
 }
 

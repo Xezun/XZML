@@ -57,15 +57,14 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)didBeginElement:(XZMLElement)element attributes:(NSMutableDictionary<NSAttributedStringKey, id> *)attributes;
 
 /// 已识别出元素中的样式。
-/// - Note: 在识别属性的过程中，可以通过属性来提前终止元素的解析，比如安全字符替换。
+/// - Note: 在识别属性的过程中，特定的属性，可以提前终止元素的解析，比如安全字符替换。
 /// - Parameters:
 ///   - element: 识别中的元素
 ///   - attribute: 已识别的样式
 ///   - value: 识别出的样式值
 ///   - attributes: 当前元素的富文本属性
-/// - Returns: 返回 nil 表示当前元素，则继续解析元素；返回富文本，则表示元素已不需要继续解析，直接使用返回的富文本。
-+ (nullable NSAttributedString *)element:(XZMLElement)element didEndAttribute:(XZMLAttribute)style value:(NSString *)value attributes:(NSMutableDictionary<NSAttributedStringKey,id> *)attributes;
-+ (nullable NSAttributedString *)element:(XZMLElement)element didEndAttribute:(XZMLAttribute)attribute value:(NSString *)value attributes:(NSMutableDictionary<NSAttributedStringKey,id> *)attributes;
+/// - Returns: 返回 YES 表示当前元素，则继续解析元素；返回富文本，则表示元素已不需要继续解析，直接使用返回的富文本。
++ (BOOL)element:(XZMLElement)element didEndAttribute:(XZMLAttribute)attribute value:(NSString *)value attributes:(NSMutableDictionary<NSAttributedStringKey,id> *)attributes;
 
 /// 已识别文本。
 /// - Parameters:
@@ -80,9 +79,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)didEndElement:(XZMLElement)element;
 
 @end
-
-
-@class UITableView;
 
 @interface XZMLParser (XZMLExtendedParser)
 

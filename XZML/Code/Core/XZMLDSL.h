@@ -26,6 +26,15 @@ enum : XZMLAttribute {
     XZMLAttributeText = '\0'
 };
 
+typedef NS_ENUM(NSUInteger, XZMLDSLMode) {
+    /// 解析所有属性和文本
+    XZMLDSLModeAll,
+    /// 只解析文本
+    XZMLDSLModeText,
+    /// 不解析任何，忽略元素
+    XZMLDSLModeNone,
+};
+
 /// XZML 元素识别器。
 /// @discussion 返回元素的结束标记符，表示 character 是一个元素的开始标记符。
 /// @discussion 返回 XZMLElementNotAnElement 表示 character 不是元素标记符。
@@ -48,7 +57,7 @@ typedef void (^XZMLDSLDidBeginElement)(XZMLElement element);
 /// @param attribute 属性
 /// @param value 属性原始值
 /// @returns 返回 NO 将终止解析当前元素及子元素
-typedef BOOL (^XZMLDSLDidEndAttribute)(XZMLElement element, XZMLAttribute attribute, NSString *value);
+typedef XZMLDSLMode (^XZMLDSLDidEndAttribute)(XZMLElement element, XZMLAttribute attribute, NSString *value);
 
 /// 识别了文本。
 /// @discussion 元素文本会被子元素分隔，从而导致元素的文本会被分段识别。

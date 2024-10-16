@@ -35,7 +35,7 @@ Pod::Spec.new do |s|
   
   s.subspec 'Code' do |ss|
     ss.source_files = 'XZML/Code/**/*.{h,m}'
-     ss.private_header_files = 'XZML/Code/**/Core/*.h'
+    # ss.private_header_files = 'XZML/Code/**/Core/*.h'
   end
   
   # s.resource_bundles = {
