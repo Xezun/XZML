@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// XZML 元素标记字符，一般使用成对的 ASCII 字符作为元素标记字符。
 /// @note XZML 使用结束标记符来代表或区分元素。
 typedef char XZMLElement;
+
 /// XZML 样式标记字符，一般使用 ASCII 特殊标点符号作为标记字符。
 typedef char XZMLAttribute;
 
@@ -44,10 +45,10 @@ typedef void (^XZMLDSLDidBeginElement)(XZMLElement element);
 
 /// 识别了属性。
 /// @param element 元素
-/// @param style 属性
+/// @param attribute 属性
 /// @param value 属性原始值
 /// @returns 返回 NO 将终止解析当前元素及子元素
-typedef BOOL (^XZMLDSLDidEndAttribute)(XZMLElement element, XZMLAttribute style, NSString *value);
+typedef BOOL (^XZMLDSLDidEndAttribute)(XZMLElement element, XZMLAttribute attribute, NSString *value);
 
 /// 识别了文本。
 /// @discussion 元素文本会被子元素分隔，从而导致元素的文本会被分段识别。

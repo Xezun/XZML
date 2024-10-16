@@ -6,6 +6,7 @@
 //
 
 #import "Foundation+XZML.h"
+#import "XZMLParser.h"
 
 @implementation NSAttributedString (XZML)
 
@@ -86,3 +87,22 @@
 @end
 
 
+@implementation NSCharacterSet (XZML)
+
++ (NSCharacterSet *)XZMLCharacterSet {
+    static NSCharacterSet *_characterSet = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"<@#&$*~^>"];
+    });
+    return _characterSet;
+}
+
++ (void)addXZMLCharactersInString:(NSString *)aString {
+    @synchronized (self) {
+        NSMutableCharacterSet *set = (id)NSCharacterSet.XZMLCharacterSet;
+        [set addCharactersInString:aString];
+    }
+}
+
+@end

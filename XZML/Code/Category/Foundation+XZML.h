@@ -6,32 +6,38 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <XZML/XZMLParser.h>
+#import <XZML/XZMLDefines.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol XZMLSupporting <NSObject>
-@optional
+@interface NSAttributedString (XZML)
+
 /// 通过 XZML 字符串构造对象。
 /// @param XZMLString XZML 字符串
 /// @param attributes 默认属性
 - (instancetype)initWithXZMLString:(nullable NSString *)XZMLString attributes:(nullable NSDictionary<NSString *, id> *)attributes NS_SWIFT_NAME(init(XZML:attributes:));
-@end
 
-@interface NSAttributedString (XZML) <XZMLSupporting>
 /// 通过 XZML 字符串构造富文本。
 /// @param XZMLString XZML 字符串
 - (instancetype)initWithXZMLString:(nullable NSString *)XZMLString NS_SWIFT_NAME(init(XZML:));
+
 @end
 
 @interface NSMutableAttributedString (XZML)
+
 /// 使用 XZML 添加富文本。
 /// @param XZMLString XZML
 /// @param attributes 默认属性
 - (void)appendXZMLString:(nullable NSString *)XZMLString attributes:(nullable NSDictionary<NSString *,id> *)attributes NS_SWIFT_NAME(append(XZML:attributes:));
+
 @end
 
-@interface NSString (XZML) <XZMLSupporting>
+@interface NSString (XZML)
+
+/// 通过 XZML 字符串构造对象。
+/// @param XZMLString XZML 字符串
+/// @param attributes 默认属性
+- (instancetype)initWithXZMLString:(nullable NSString *)XZMLString attributes:(nullable NSDictionary<NSString *, id> *)attributes NS_SWIFT_NAME(init(XZML:attributes:));
 
 /// 通过 XZML 字符串构造文本。
 /// @param XZMLString XZML 字符串
@@ -43,6 +49,15 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface NSMutableString (XZML)
+@end
+
+@interface NSCharacterSet (XZML)
+/// XZML 的标记字符集。
+/// @attention 新增 XZML 标记需更新此字符集。
+@property (class, readonly) NSCharacterSet *XZMLCharacterSet;
+/// 更新 XZML 标记符集。
+/// @param aString 包含新增 XZML 标记符的字符串
++ (void)addXZMLCharactersInString:(NSString *)aString;
 @end
 
 

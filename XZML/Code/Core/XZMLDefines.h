@@ -88,14 +88,6 @@ enum : XZMLAttribute {
     
 };
 
-@interface NSCharacterSet (XZML)
-/// XZML 的标记字符集。
-/// @attention 新增 XZML 标记需更新此字符集。
-@property (class, readonly) NSCharacterSet *XZMLCharacterSet;
-/// 更新 XZML 标记符集。
-/// @param aString 包含新增 XZML 标记符的字符串
-+ (void)addXZMLCharactersInString:(NSString *)aString;
-@end
 
 /// 通过此属性名指定 XZML 解析时的默认字体。
 /// @discussion 值为 UIFont 对象。
