@@ -440,7 +440,7 @@ XZMLReadingOptions XZMLAttributeDecorationParser(const XZMLParserContext context
 
 XZMLReadingOptions XZMLAttributeSecurityParser(const XZMLParserContext context, XZMLElement const element, NSString * const value) {
     // 只有安全模式下，才需要解析安全字符样式
-    if ([context.elementAttributes[XZMLSecurityModeAttributeName] boolValue]) {
+    if ([context.defaultAttributes[XZMLSecurityModeAttributeName] boolValue]) {
         // 标记这是一个安全样式元素
         context.elementAttributes[XZMLAttributeSecurityElementAttributeName] = @(YES);
         
@@ -452,7 +452,7 @@ XZMLReadingOptions XZMLAttributeSecurityParser(const XZMLParserContext context, 
                 context.elementAttributes[XZMLSecurityMarkAttributeName] = mark;
             }
             
-            NSInteger const repeat = [values[1] xz_integerValue:4 base:10];
+            NSInteger const repeat = values[1].integerValue;
             if (repeat > 0) {
                 context.elementAttributes[XZMLSecurityRepeatAttributeName] = @(repeat);
                 return XZMLReadingNone;
@@ -464,6 +464,7 @@ XZMLReadingOptions XZMLAttributeSecurityParser(const XZMLParserContext context, 
                 // 多字符的安全符，默认重复 1 次
                 if ([mark rangeOfComposedCharacterSequenceAtIndex:0].length < mark.length) {
                     context.elementAttributes[XZMLSecurityRepeatAttributeName] = @(1);
+                    return XZMLReadingNone;
                 }
             }
             return XZMLReadingText;
