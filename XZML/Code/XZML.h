@@ -6,7 +6,6 @@
 //
 //  XZML - Xezun Markup Language
 
+#import <XZML/XZMLDefines.h>
 #import <XZML/Foundation+XZML.h>
 #import <XZML/UIKit+XZML.h>
-
-

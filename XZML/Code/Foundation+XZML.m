@@ -50,9 +50,9 @@
     return [self initWithXZMLString:XZMLString attributes:nil];
 }
 
-- (NSMutableString *)stringByEscapingXZMLCharacters {
+- (NSMutableString *)stringByEscapingXZMLReservedCharacters {
     NSUInteger        const length  = self.length;
-    NSCharacterSet  * const XZMLSet = [NSCharacterSet XZMLCharacterSet];
+    NSCharacterSet  * const XZMLSet = NSCharacterSet.XZMLReservedCharacterSet;
     NSMutableString * const stringM = [NSMutableString stringWithCapacity:length + 20];
     
     for (NSInteger i = 0; i < length; ) {
@@ -89,7 +89,7 @@
 
 @implementation NSCharacterSet (XZML)
 
-+ (NSCharacterSet *)XZMLCharacterSet {
++ (NSCharacterSet *)XZMLReservedCharacterSet {
     static NSCharacterSet *_characterSet = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -100,8 +100,9 @@
 
 + (void)addXZMLCharactersInString:(NSString *)aString {
     @synchronized (self) {
-        NSMutableCharacterSet *set = (id)NSCharacterSet.XZMLCharacterSet;
+        NSMutableCharacterSet *set = (id)NSCharacterSet.XZMLReservedCharacterSet;
         [set addCharactersInString:aString];
+        [NSCharacterSet URLHostAllowedCharacterSet];
     }
 }
 

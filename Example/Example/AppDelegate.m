@@ -6,7 +6,7 @@
 //
 
 #import "AppDelegate.h"
-@import XZML;
+#import <XZML/XZMLCore.h>
 
 @interface AppDelegate ()
 

@@ -13,6 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface UILabel (XZML)
 
 /// 设置 XZML 格式的文本。
+///
+/// 如果 attributes 中没有提供 NSFontAttributeName、NSForegroundColorAttributeName 参数，则 UILabel 的 font、textColor 会分别当作对应的默认值。
+///
 /// - Parameters:
 ///   - XZMLString: XZML 文本
 ///   - attributes: 文本样式属性

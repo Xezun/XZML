@@ -32,6 +32,7 @@ static inline NSUInteger XZMLDSLContextSearchASCII(XZMLDSLContext *context) {
     return index;
 }
 
+/// 跳过当前元素，包括子元素。
 static void XZMLElementDSLAbort(XZMLDSLContext * const context, XZMLElement const element, NS_NOESCAPE XZMLDSLShouldBeginElement const shouldBeginElement) {
     BOOL isEscaping = NO;
     do {
@@ -66,6 +67,7 @@ static void XZMLElementDSLAbort(XZMLDSLContext * const context, XZMLElement cons
     } while (context->index < context->length);
 }
 
+/// 仅识别当前元素中的文本，忽略属性。
 static NSString *XZMLElementDSLText(XZMLDSLContext * const context, XZMLElement const element, NS_NOESCAPE XZMLDSLShouldBeginElement const shouldBeginElement, NS_NOESCAPE XZMLDSLShouldBeginAttribute const shouldBeginAttribute) {
     NSMutableString * const value = [NSMutableString stringWithCapacity:context->length - context->index];
     
@@ -134,6 +136,7 @@ static NSString *XZMLElementDSLText(XZMLDSLContext * const context, XZMLElement 
     return value;
 }
 
+/// 元素识别。
 /// 传入的 context->index 指向当前元素开始标记之后第一个字符，
 /// 本函数执行完毕 context->index 执行元素结束标记之后的第一个字符，或者指向字符串结束标志`\0`。
 static void XZMLElementDSL(XZMLDSLContext * const context,
@@ -141,8 +144,8 @@ static void XZMLElementDSL(XZMLDSLContext * const context,
                            NS_NOESCAPE XZMLDSLShouldBeginElement const shouldBeginElement,
                            NS_NOESCAPE XZMLDSLShouldBeginAttribute const shouldBeginAttribute,
                            NS_NOESCAPE XZMLDSLDidBeginElement const didBeginElement,
-                           NS_NOESCAPE XZMLDSLDidEndAttribute const didEndAttribute,
-                           NS_NOESCAPE XZMLDSLDidEndTextFragment const didEndTextFragment,
+                           NS_NOESCAPE XZMLDSLFoundAttribute const foundAttribute,
+                           NS_NOESCAPE XZMLDSLFoundTextFragment const foundTextFragment,
                            NS_NOESCAPE XZMLDSLDidEndElement const didEndElement) {
     // 发送元素识别开始事件
     didBeginElement(element);
@@ -199,12 +202,12 @@ static void XZMLElementDSL(XZMLDSLContext * const context,
             // 发送文本识别事件：已识别的字符作为文本属性
             NSUInteger const length = value.length;
             if (length > 0) {
-                didEndTextFragment(element, value.copy, fragment++);
+                foundTextFragment(element, value.copy, fragment++);
                 [value deleteCharactersInRange:NSMakeRange(0, length)];
             }
             
             // 识别子元素
-            XZMLElementDSL(context, newElement, shouldBeginElement, shouldBeginAttribute, didBeginElement, didEndAttribute, didEndTextFragment, didEndElement);
+            XZMLElementDSL(context, newElement, shouldBeginElement, shouldBeginAttribute, didBeginElement, foundAttribute, foundTextFragment, didEndElement);
             continue;
         }
 
@@ -214,15 +217,15 @@ static void XZMLElementDSL(XZMLDSLContext * const context,
             [value deleteCharactersInRange:NSMakeRange(0, value.length)];
             
             // 发送属性识别事件
-            XZMLDSLMode const mode = didEndAttribute(element, character, attributeValue);
-            if (mode == XZMLDSLModeAll) {
+            XZMLReadingOptions const mode = foundAttribute(element, character, attributeValue);
+            if (mode == XZMLReadingAll) {
                 continue;
             }
             
-            if (mode == XZMLDSLModeText) {
+            if (mode == XZMLReadingText) {
                 // 提出文本
                 [value appendString:XZMLElementDSLText(context, element, shouldBeginElement, shouldBeginAttribute)];
-            } else if (mode == XZMLDSLModeNone) {
+            } else if (mode == XZMLReadingNone) {
                 // 终止当前元素
                 XZMLElementDSLAbort(context, element, shouldBeginElement);
             }
@@ -234,7 +237,7 @@ static void XZMLElementDSL(XZMLDSLContext * const context,
     } while (context->index < context->length);
 
     // 发送文本识别事件：已识别的字符作为文本属性
-    didEndTextFragment(element, value, fragment);
+    foundTextFragment(element, value, fragment);
     
     // 发送元素识别结束事件
     didEndElement(element);
@@ -244,8 +247,8 @@ void XZMLDSL(NSString *XZMLString,
              NS_NOESCAPE XZMLDSLShouldBeginElement const shouldBeginElement,
              NS_NOESCAPE XZMLDSLShouldBeginAttribute const shouldBeginAttribute,
              NS_NOESCAPE XZMLDSLDidBeginElement const didBeginElement,
-             NS_NOESCAPE XZMLDSLDidEndAttribute const didEndAttribute,
-             NS_NOESCAPE XZMLDSLDidEndTextFragment const didEndTextFragment,
+             NS_NOESCAPE XZMLDSLFoundAttribute const foundAttribute,
+             NS_NOESCAPE XZMLDSLFoundTextFragment const foundTextFragment,
              NS_NOESCAPE XZMLDSLDidEndElement const didEndElement) {
     NSCAssert([XZMLString isKindOfClass:NSString.class], @"XZML 必须为字符串");
 
@@ -284,11 +287,11 @@ void XZMLDSL(NSString *XZMLString,
                 const char * const bytes = context.UTF8String + start;
                 NSUInteger   const count = index - start;
                 NSString *value = [[NSString alloc] initWithBytes:bytes length:count encoding:NSUTF8StringEncoding];
-                didEndTextFragment(XZMLElementNotAnElement, value, fragment++);
+                foundTextFragment(XZMLElementNotAnElement, value, fragment++);
             }
 
             // 然后开始识别元素。
-            XZMLElementDSL(&context, element, shouldBeginElement, shouldBeginAttribute, didBeginElement, didEndAttribute, didEndTextFragment, didEndElement);
+            XZMLElementDSL(&context, element, shouldBeginElement, shouldBeginAttribute, didBeginElement, foundAttribute, foundTextFragment, didEndElement);
 
             // 元素识别完成后，记录位置。
             start = context.index;
@@ -300,6 +303,6 @@ void XZMLDSL(NSString *XZMLString,
         const char * const bytes = context.UTF8String + start;
         NSUInteger   const count = context.index - start;
         NSString *value = [[NSString alloc] initWithBytes:bytes length:count encoding:NSUTF8StringEncoding];
-        didEndTextFragment(XZMLElementNotAnElement, value, fragment);
+        foundTextFragment(XZMLElementNotAnElement, value, fragment);
     }
 }

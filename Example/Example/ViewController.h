@@ -9,7 +9,7 @@
 
 @interface ViewController : UIViewController
 
-@property (nonatomic, copy) NSString *XZMLString;
+@property (nonatomic, copy) NSDictionary *data;
 
 @end
 

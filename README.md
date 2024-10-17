@@ -1,6 +1,6 @@
 # XZML
 
-[![CI Status](https://img.shields.io/travis/xezun/XZML.svg?style=flat)](https://travis-ci.org/xezun/XZML)
+[![CI Status](https://img.shields.io/badge/Build-pass-brightgreen.svg)](https://cocoapods.org/pods/XZML)
 [![Version](https://img.shields.io/cocoapods/v/XZML.svg?style=flat)](https://cocoapods.org/pods/XZML)
 [![License](https://img.shields.io/cocoapods/l/XZML.svg?style=flat)](https://cocoapods.org/pods/XZML)
 [![Platform](https://img.shields.io/cocoapods/p/XZML.svg?style=flat)](https://cocoapods.org/pods/XZML)
@@ -27,9 +27,9 @@ pod 'XZML'
 
 ## 背景
 
-XZML是一款轻量级的富文本标记语言，是为解决在iOS开发中，富文本构造过程繁琐、不支持后端下发的问题而研发。
+XZML 是一款轻量级的富文本标记语言，可以解决在iOS开发中，富文本构造过程繁琐、以及不支持后端下发等问题。
 
-## 效果
+## 示例
 
 | XZML | 效果 | 说明 |
 |:--|:--|:--|
