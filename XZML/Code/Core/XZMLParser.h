@@ -88,6 +88,11 @@ enum : XZMLAttribute {
     
 };
 
+typedef struct XZMLParserContext {
+    __unsafe_unretained NSMutableDictionary<NSAttributedStringKey, id> * _Nonnull  elementAttributes;
+    __unsafe_unretained NSDictionary<NSAttributedStringKey, id>        * _Nullable defaultAttributes;
+} XZMLParserContext;
+
 /// 解析 XZML 的对象，不需要实例化。
 @interface XZMLParser : NSObject
 
@@ -131,7 +136,7 @@ enum : XZMLAttribute {
 /// - Parameters:
 ///   - element: 被解析的元素的标记
 ///   - attributes: 元素的样式属性
-+ (void)didBeginElement:(XZMLElement)element attributes:(NSMutableDictionary<NSAttributedStringKey, id> *)attributes;
++ (void)didBeginElement:(XZMLElement)element context:(const XZMLParserContext)context;
 
 /// 已识别出元素中的样式。
 /// - Note: 在识别属性的过程中，特定的属性，可以提前终止元素的解析，比如安全字符替换。
@@ -141,7 +146,7 @@ enum : XZMLAttribute {
 ///   - value: 识别出的样式值
 ///   - attributes: 元素的样式属性
 /// - Returns: 当前元素后续的解析方式
-+ (XZMLReadingOptions)element:(XZMLElement)element foundAttribute:(XZMLAttribute)attribute value:(NSString *)value attributes:(NSMutableDictionary<NSAttributedStringKey,id> *)attributes;
++ (XZMLReadingOptions)element:(XZMLElement)element foundAttribute:(XZMLAttribute)attribute value:(NSString *)value context:(const XZMLParserContext)context;
 
 /// 已识别文本。
 /// - Parameters:
@@ -154,7 +159,7 @@ enum : XZMLAttribute {
 /// 元素识别结束
 /// - Parameter element: 当前识别中的元素
 /// - Parameter attributes: 元素的样式属性
-+ (void)didEndElement:(XZMLElement)element attributes:(NSMutableDictionary<NSAttributedStringKey, id> *)attributes;
++ (void)didEndElement:(XZMLElement)element context:(const XZMLParserContext)context;
 
 @end
 

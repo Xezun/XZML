@@ -190,7 +190,7 @@
                                                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="128" id="ZKk-OU-fuj"/>
                                                                 </constraints>
                                                                 <color key="textColor" systemColor="labelColor"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                             </textView>
                                                         </subviews>

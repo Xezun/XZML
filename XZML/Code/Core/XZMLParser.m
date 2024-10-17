@@ -11,12 +11,12 @@
 @import XZDefines;
 
 // 样式解析：返回值表示为是否跳过当前元素。
-static XZMLReadingOptions XZMLAttributeFontParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
-static XZMLReadingOptions XZMLAttributeColorParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
-static XZMLReadingOptions XZMLAttributeDecorationParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
-static XZMLReadingOptions XZMLAttributeSecurityParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
-static XZMLReadingOptions XZMLAttributeLinkParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
-static XZMLReadingOptions XZMLAttributeParagraphParser(NSMutableDictionary<NSAttributedStringKey, id> *attributes, XZMLElement element, NSString *value);
+static XZMLReadingOptions XZMLAttributeFontParser(const XZMLParserContext context, XZMLElement element, NSString *value);
+static XZMLReadingOptions XZMLAttributeColorParser(const XZMLParserContext context, XZMLElement element, NSString *value);
+static XZMLReadingOptions XZMLAttributeDecorationParser(const XZMLParserContext context, XZMLElement element, NSString *value);
+static XZMLReadingOptions XZMLAttributeSecurityParser(const XZMLParserContext context, XZMLElement element, NSString *value);
+static XZMLReadingOptions XZMLAttributeLinkParser(const XZMLParserContext context, XZMLElement element, NSString *value);
+static XZMLReadingOptions XZMLAttributeParagraphParser(const XZMLParserContext context, XZMLElement element, NSString *value);
 
 /// 标记元素是否为安全样式文本。
 static NSAttributedStringKey const XZMLAttributeSecurityElementAttributeName = @"XZMLAttributeSecurityElementAttributeName";
@@ -27,7 +27,10 @@ static NSString *XZMLAttributeTextParser(NSDictionary<NSAttributedStringKey, id>
 
 + (void)attributedString:(NSMutableAttributedString * const)attributedString parse:(NSString *)XZMLString attributes:(NSDictionary<NSAttributedStringKey,id> *)attributes {
     /// XZML元素文本属性栈
-    NSMutableArray * const _elementAttributes = [NSMutableArray arrayWithObject:(attributes ?: @{})];
+    NSMutableArray * const _elementAttributes = [NSMutableArray arrayWithCapacity:32];
+    NSMutableArray * const _textAttributes = [NSMutableArray arrayWithCapacity:32];
+    
+    XZMLParserContext __block _context = { nil, attributes };
     
     XZMLDSL(XZMLString, ^XZMLElement(char const character) {
         // 识别元素
@@ -37,24 +40,39 @@ static NSString *XZMLAttributeTextParser(NSDictionary<NSAttributedStringKey, id>
         return [self element:element shouldBeginAttribute:character];
     }, ^(XZMLElement const element) {
         // 开始识别元素
-        id const attributes = [_elementAttributes.lastObject mutableCopy];
-        [_elementAttributes addObject:attributes];
-        [self didBeginElement:element attributes:attributes];
+        id const newAttributes = [_elementAttributes.lastObject mutableCopy] ?: [NSMutableDictionary dictionary];
+        [_elementAttributes addObject:newAttributes];
+        [_textAttributes addObject:[NSMutableDictionary dictionary]];
+        _context.elementAttributes = newAttributes;
+        [self didBeginElement:element context:_context];
     }, ^XZMLReadingOptions (XZMLElement const element, XZMLElement const attribute, NSString *value) {
         // 解析元素属性
-        id const attributes = _elementAttributes.lastObject;
-        return [self element:element foundAttribute:attribute value:value attributes:attributes];
+        _context.elementAttributes = _elementAttributes.lastObject;
+        return [self element:element foundAttribute:attribute value:value context:_context];
     }, ^(XZMLElement element, NSString * _Nonnull text, NSUInteger fragment) {
         // 获得文本，可能是非元素文本
-        id const textAttributes = _elementAttributes.lastObject;
+        NSMutableDictionary * const textAttributes = _textAttributes.lastObject;
+        if (textAttributes.count == 0) {
+            [textAttributes addEntriesFromDictionary:_elementAttributes.lastObject];
+            [attributes enumerateKeysAndObjectsUsingBlock:^(NSAttributedStringKey  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                if ([key hasPrefix:@"XZML"]) {
+                    return;
+                }
+                if (textAttributes[key] == nil) {
+                    textAttributes[key] = obj;
+                }
+            }];
+        }
         NSAttributedString * const textAttributedString = [self element:element foundText:text fragment:fragment attributes:textAttributes];
         if (textAttributedString) {
             [attributedString appendAttributedString:textAttributedString];
         }
     }, ^(XZMLElement const element) {
         // 完成元素识别
-        [self didEndElement:element attributes:_elementAttributes.lastObject];
+        _context.elementAttributes = _elementAttributes.lastObject;
+        [self didEndElement:element context:_context];
         [_elementAttributes removeLastObject];
+        [_textAttributes removeLastObject];
     });
 }
 
@@ -70,6 +88,8 @@ static NSString *XZMLAttributeTextParser(NSDictionary<NSAttributedStringKey, id>
     if ([attributes[XZMLSecurityModeAttributeName] boolValue]) {
         [_attributes addObject:attributes];
     }
+    
+    XZMLParserContext __block _context = { nil, attributes };
 
     XZMLDSL(XZMLString, ^XZMLElement(char character) {
         return [self shouldBeginElement:character];
@@ -82,8 +102,8 @@ static NSString *XZMLAttributeTextParser(NSDictionary<NSAttributedStringKey, id>
         }
     }, ^XZMLReadingOptions(XZMLElement element, XZMLElement attribute, NSString *value) {
         if (attribute == XZMLAttributeSecurity) {
-            id const attributes = _attributes.lastObject;
-            return [self element:element foundAttribute:attribute value:value attributes:attributes];
+            _context.elementAttributes = _attributes.lastObject;
+            return [self element:element foundAttribute:attribute value:value context:_context];
         }
         return XZMLReadingAll;
     }, ^(XZMLElement element, NSString *text, NSUInteger fragment) {
@@ -119,29 +139,29 @@ static NSString *XZMLAttributeTextParser(NSDictionary<NSAttributedStringKey, id>
     }
 }
 
-+ (void)didBeginElement:(XZMLElement)element attributes:(NSMutableDictionary<NSAttributedStringKey,id> *)attributes {
++ (void)didBeginElement:(XZMLElement)element context:(const XZMLParserContext)context {
     
 }
 
-+ (XZMLReadingOptions)element:(XZMLElement)element foundAttribute:(XZMLAttribute)attribute value:(NSString *)value attributes:(NSMutableDictionary<NSAttributedStringKey,id> *)attributes {
++ (XZMLReadingOptions)element:(XZMLElement)element foundAttribute:(XZMLAttribute)attribute value:(NSString *)value context:(const XZMLParserContext)context {
     switch (attribute) {
         case XZMLAttributeColor: {
-            return XZMLAttributeColorParser(attributes, element, value);
+            return XZMLAttributeColorParser(context, element, value);
         }
         case XZMLAttributeFont: {
-            return XZMLAttributeFontParser(attributes, element, value);
+            return XZMLAttributeFontParser(context, element, value);
         }
         case XZMLAttributeDecoration: {
-            return XZMLAttributeDecorationParser(attributes, element, value);
+            return XZMLAttributeDecorationParser(context, element, value);
         }
         case XZMLAttributeSecurity: {
-            return XZMLAttributeSecurityParser(attributes, element, value);
+            return XZMLAttributeSecurityParser(context, element, value);
         }
         case XZMLAttributeLink: {
-            return XZMLAttributeLinkParser(attributes, element, value);
+            return XZMLAttributeLinkParser(context, element, value);
         }
         case XZMLAttributeParagraph: {
-            return XZMLAttributeParagraphParser(attributes, element, value);
+            return XZMLAttributeParagraphParser(context, element, value);
         }
         default: {
             XZLog(@"XZML：自定义属性 %c 暂不支持", attribute);
@@ -154,7 +174,7 @@ static NSString *XZMLAttributeTextParser(NSDictionary<NSAttributedStringKey, id>
     return [[NSAttributedString alloc] initWithString:XZMLAttributeTextParser(attributes, text) attributes:attributes];
 }
 
-+ (void)didEndElement:(XZMLElement)element attributes:(NSMutableDictionary<NSAttributedStringKey,id> *)attributes {
++ (void)didEndElement:(XZMLElement)element context:(const XZMLParserContext)context {
     
 }
 
@@ -230,85 +250,144 @@ static void XZMLParserSetFontWithName(NSMutableDictionary<NSAttributedStringKey,
     }
 };
 
+FOUNDATION_STATIC_INLINE UIColor *XZMLForegroundColorFromContext(const XZMLParserContext context, NSString *value) {
+    UIColor * const color = rgba(value, nil);
+    if (color) {
+        return color;
+    }
+    return context.elementAttributes[NSForegroundColorAttributeName] ? nil : (context.defaultAttributes[XZMLForegroundColorAttributeName] ?: context.defaultAttributes[NSForegroundColorAttributeName]);
+}
+
+FOUNDATION_STATIC_INLINE UIColor *XZMLBackgroundColorFromContext(const XZMLParserContext context, NSString *value) {
+    UIColor * const color = rgba(value, nil);
+    if (color) {
+        return color;
+    }
+    return context.elementAttributes[NSBackgroundColorAttributeName] ? nil : (context.defaultAttributes[XZMLBackgroundColorAttributeName] ?: context.defaultAttributes[NSBackgroundColorAttributeName]);
+}
+
 #pragma mark - 样式解析
 
-XZMLReadingOptions XZMLAttributeColorParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
+XZMLReadingOptions XZMLAttributeColorParser(const XZMLParserContext context, XZMLElement const element, NSString * const value) {
     if ([value containsString:@"@"]) {
         NSArray<NSString *> * const values = [value componentsSeparatedByString:@"@"];
-        UIColor *foregroundColor = nil;
-        UIColor *backgroundColor = nil;
         
-        if (values[0].length > 0) {
-            foregroundColor = rgba(values[0], attributes[XZMLForegroundColorAttributeName]);
+        UIColor * const foregroundColor = XZMLForegroundColorFromContext(context, values[0]);
+        if (foregroundColor) {
+            context.elementAttributes[NSForegroundColorAttributeName] = foregroundColor;
         }
         
-        if (values[1].length > 0) {
-            backgroundColor = rgba(values[1], attributes[XZMLBackgroundColorAttributeName]);
-        }
-        
-        if (foregroundColor != nil) {
-            attributes[NSForegroundColorAttributeName] = foregroundColor;
-        }
-        if (backgroundColor != nil) {
-            attributes[NSBackgroundColorAttributeName] = backgroundColor;
+        UIColor * const backgroundColor = XZMLBackgroundColorFromContext(context, values[1]);
+        if (backgroundColor) {
+            context.elementAttributes[NSBackgroundColorAttributeName] = backgroundColor;
         }
     } else {
-        UIColor *foregroundColor = rgba(value, attributes[XZMLForegroundColorAttributeName]);
+        UIColor *foregroundColor = XZMLForegroundColorFromContext(context, value);
         if (foregroundColor != nil) {
-            attributes[NSForegroundColorAttributeName] = foregroundColor;
+            context.elementAttributes[NSForegroundColorAttributeName] = foregroundColor;
         }
     }
     return XZMLReadingAll;
 }
 
-XZMLReadingOptions XZMLAttributeFontParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
-    UIFont * const custom = attributes[XZMLFontAttributeName];
-    UIFont * const parent = attributes[NSFontAttributeName];
+FOUNDATION_STATIC_INLINE UIFont * _Nullable XZMLFontFromContext(const XZMLParserContext context, NSString * _Nullable nameString, NSString * _Nullable sizeString) {
+    NSString *name = nil;
+    CGFloat size = 0;
+    UIFont *font = nil;
     
+    if (nameString.length == 0 && sizeString.length == 0) {
+    bad_name_size: // name/size 都不合法
+        if (context.elementAttributes[NSFontAttributeName]) {
+            return nil; // 使用父元素字体
+        }
+        return context.defaultAttributes[XZMLFontAttributeName] ?: context.defaultAttributes[NSFontAttributeName];
+    }
+    
+    if (nameString.length == 0) {
+        size = sizeString.doubleValue;
+        if (size <= 0 || isnan(size)) {
+            goto bad_name_size;
+        }
+    bad_name_only: // 仅 name 不合法
+        font = context.elementAttributes[NSFontAttributeName];
+        if (font) {
+            if (font.pointSize == size) {
+                return nil;
+            }
+            return [font fontWithSize:size];
+        }
+        font = context.defaultAttributes[XZMLFontAttributeName] ?: context.defaultAttributes[NSFontAttributeName];
+        return [font fontWithSize:size];
+    }
+    
+    if (sizeString.length == 0) {
+    bad_size: // size 不合法，name 还未判断
+        name = [XZMLParser fontNameForAbbreviation:nameString];
+        font = context.elementAttributes[NSFontAttributeName];
+        if (font) {
+            if ([name isEqualToString:font.familyName]) {
+                return nil;
+            }
+            font = [UIFont fontWithName:name size:font.pointSize];
+            if (font == nil) {
+                goto bad_name_size;
+            }
+            return font;
+        }
+        font = context.defaultAttributes[XZMLFontAttributeName] ?: context.defaultAttributes[NSFontAttributeName];
+        if (font == nil) {
+            return nil; // 不能确定 fontSize
+        }
+        CGFloat const size = font.pointSize;
+        font = [UIFont fontWithName:name size:size];
+        if (font) {
+            return font;
+        }
+        return [UIFont systemFontOfSize:size]; // 不能确定 fontName 使用系统字体
+    }
+    
+    size = sizeString.doubleValue;
+    if (size <= 0 || isnan(size)) {
+        goto bad_size;
+    }
+    name = [XZMLParser fontNameForAbbreviation:nameString];
+    font = [UIFont fontWithName:name size:size];
+    if (font == nil) {
+        goto bad_name_only; // 名字不合法
+    }
+    return font;
+}
+
+XZMLReadingOptions XZMLAttributeFontParser(const XZMLParserContext context, XZMLElement const element, NSString * const value) {
     if ([value containsString:@"@"]) {
         NSArray<NSString *> * const values = [value componentsSeparatedByString:@"@"];
         
         NSString * const name = values[0];
         CGFloat    const size = values[1].floatValue;
         
-        if (name.length > 0) {
-            if (size > 0) {
-                XZMLParserSetFontWithNameSize(attributes, custom, parent, name, size);
-            } else {
-                XZMLParserSetFontWithName(attributes, custom, parent, name);
-            }
-        } else if (size > 0) {
-            if (!XZMLParserSetFontWithSize(attributes, custom, parent, size)) {
-                XZLog(@"警告：无法确定 %@ 字体，请通过 defaultAttributes 参数指定解析时的默认字体", value);
-            }
-        } else {
-            if (!XZMLParserSetFontWithDefault(attributes, custom, parent)) {
-                XZLog(@"警告：无法确定 %@ 字体，请通过 defaultAttributes 参数指定解析时的默认字体", value);
-            }
+        UIFont * font = XZMLFontFromContext(context, values[0], values[1]);
+        if (font) {
+            context.elementAttributes[NSFontAttributeName] = font;
         }
         
         // 字体基准线调整
         if (values.count > 2) {
             CGFloat const baselineOffset = values[2].floatValue;
             if (baselineOffset != 0) {
-                attributes[NSBaselineOffsetAttributeName] = @(baselineOffset);
+                context.elementAttributes[NSBaselineOffsetAttributeName] = @(baselineOffset);
             }
         }
     } else {
-        // 仅指定了一个参数
-        NSString * const name = value;
-        if (name.length > 0) {
-            XZMLParserSetFontWithName(attributes, custom, parent, name);
-        } else {
-            if (!XZMLParserSetFontWithDefault(attributes, custom, parent)) {
-                XZLog(@"警告：无法确定 %@ 字体，请通过 defaultAttributes 参数指定解析时的默认字体", value);
-            }
+        // 仅指定了一个参数，当作
+        UIFont * font = XZMLFontFromContext(context, value, nil) ?: XZMLFontFromContext(context, nil, value);
+        if (font) {
+            context.elementAttributes[NSFontAttributeName] = font;
         }
     }
     return XZMLReadingAll;
 }
 
-XZMLReadingOptions XZMLAttributeDecorationParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
+XZMLReadingOptions XZMLAttributeDecorationParser(const XZMLParserContext context, XZMLElement const element, NSString * const value) {
     NSInteger style = 0;                             // 样式
     NSUnderlineStyle lines = NSUnderlineStyleSingle; // 线型
     UIColor *color = nil;                            // 颜色
@@ -339,19 +418,19 @@ XZMLReadingOptions XZMLAttributeDecorationParser(NSMutableDictionary<NSAttribute
     }
     
     if (style == 1) {
-        attributes[NSUnderlineStyleAttributeName] = @(lines);
+        context.elementAttributes[NSUnderlineStyleAttributeName] = @(lines);
         if (color != nil) {
-            attributes[NSUnderlineColorAttributeName] = color;
+            context.elementAttributes[NSUnderlineColorAttributeName] = color;
         }
     } else {
-        attributes[NSStrikethroughStyleAttributeName] = @(lines);
+        context.elementAttributes[NSStrikethroughStyleAttributeName] = @(lines);
         if (color != nil) {
-            attributes[NSStrikethroughColorAttributeName] = color;
+            context.elementAttributes[NSStrikethroughColorAttributeName] = color;
         }
         if (@available(iOS 10.3, *)) {
             // 解决 iOS 10.3 删除线不展示的问题
-            if (attributes[NSBaselineOffsetAttributeName] == nil) {
-                attributes[NSBaselineOffsetAttributeName] = @(0);
+            if (context.elementAttributes[NSBaselineOffsetAttributeName] == nil) {
+                context.elementAttributes[NSBaselineOffsetAttributeName] = @(0);
             }
         }
     }
@@ -359,38 +438,38 @@ XZMLReadingOptions XZMLAttributeDecorationParser(NSMutableDictionary<NSAttribute
     return XZMLReadingAll;
 }
 
-XZMLReadingOptions XZMLAttributeSecurityParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement const element, NSString * const value) {
+XZMLReadingOptions XZMLAttributeSecurityParser(const XZMLParserContext context, XZMLElement const element, NSString * const value) {
     // 只有安全模式下，才需要解析安全字符样式
-    if ([attributes[XZMLSecurityModeAttributeName] boolValue]) {
+    if ([context.elementAttributes[XZMLSecurityModeAttributeName] boolValue]) {
         // 标记这是一个安全样式元素
-        attributes[XZMLAttributeSecurityElementAttributeName] = @(YES);
+        context.elementAttributes[XZMLAttributeSecurityElementAttributeName] = @(YES);
         
         if ([value containsString:@"@"]) {
             NSArray<NSString *> * const values = [value componentsSeparatedByString:@"@"];
             
             NSString * const mark = values[0];
             if (mark.length > 0) {
-                attributes[XZMLSecurityMarkAttributeName] = mark;
+                context.elementAttributes[XZMLSecurityMarkAttributeName] = mark;
             }
             
             NSInteger const repeat = [values[1] xz_integerValue:4 base:10];
             if (repeat > 0) {
-                attributes[XZMLSecurityRepeatAttributeName] = @(repeat);
+                context.elementAttributes[XZMLSecurityRepeatAttributeName] = @(repeat);
                 return XZMLReadingNone;
             }
         } else {
             NSString * const mark = value;
             if (mark.length > 0) {
-                attributes[XZMLSecurityMarkAttributeName] = mark;
+                context.elementAttributes[XZMLSecurityMarkAttributeName] = mark;
                 // 多字符的安全符，默认重复 1 次
                 if ([mark rangeOfComposedCharacterSequenceAtIndex:0].length < mark.length) {
-                    attributes[XZMLSecurityRepeatAttributeName] = @(1);
+                    context.elementAttributes[XZMLSecurityRepeatAttributeName] = @(1);
                 }
             }
             return XZMLReadingText;
         }
         
-        if ([attributes[XZMLSecurityRepeatAttributeName] unsignedIntValue] > 0) {
+        if ([context.elementAttributes[XZMLSecurityRepeatAttributeName] unsignedIntValue] > 0) {
             return XZMLReadingNone;
         }
         return XZMLReadingText;
@@ -399,17 +478,17 @@ XZMLReadingOptions XZMLAttributeSecurityParser(NSMutableDictionary<NSAttributedS
     return XZMLReadingAll;
 }
 
-XZMLReadingOptions XZMLAttributeLinkParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement element, NSString *value) {
+XZMLReadingOptions XZMLAttributeLinkParser(const XZMLParserContext context, XZMLElement element, NSString *value) {
     NSURL *url = [NSURL URLWithString:value];
     if (url != nil) {
-        attributes[NSLinkAttributeName] = url;
+        context.elementAttributes[NSLinkAttributeName] = url;
     } else {
-        attributes[NSLinkAttributeName] = value;
+        context.elementAttributes[NSLinkAttributeName] = value;
     }
     return XZMLReadingAll;
 }
 
-XZMLReadingOptions XZMLAttributeParagraphParser(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, XZMLElement element, NSString *value) {
+XZMLReadingOptions XZMLAttributeParagraphParser(const XZMLParserContext context, XZMLElement element, NSString *value) {
     if (value.length == 0) {
         return XZMLReadingAll;
     }
@@ -524,7 +603,7 @@ XZMLReadingOptions XZMLAttributeParagraphParser(NSMutableDictionary<NSAttributed
         range.length = 0;
     }
     
-    attributes[NSParagraphStyleAttributeName] = style;
+    context.elementAttributes[NSParagraphStyleAttributeName] = style;
     
     return XZMLReadingAll;
 }
