@@ -18,8 +18,12 @@ static XZMLReadingOptions XZMLAttributeSecurityParser(const XZMLParserContext co
 static XZMLReadingOptions XZMLAttributeLinkParser(const XZMLParserContext context, XZMLElement element, NSString *value);
 static XZMLReadingOptions XZMLAttributeParagraphParser(const XZMLParserContext context, XZMLElement element, NSString *value);
 
-/// 标记元素是否为安全样式文本。
-static NSAttributedStringKey const XZMLAttributeSecurityElementAttributeName = @"XZMLAttributeSecurityElementAttributeName";
+/// 安全文本替代字符。默认替代字符为 `*` 星号。
+/// @note 在元素属性中，有此属性有值表明这是一个安全文本。
+static NSAttributedStringKey const XZMLSecurityMarkAttributeName  = @"XZMLSecurityMarkAttributeName";
+/// 安全文本替代字符重复次数。
+/// @note 0 表示重复次数默认与安全文本字符数相同。
+static NSAttributedStringKey const XZMLSecurityRepeatAttributeName = @"XZMLSecurityRepeatAttributeName";
 
 static NSString *XZMLAttributeTextParser(NSDictionary<NSAttributedStringKey, id> * _Nullable attributes, NSString *text);
 
@@ -33,13 +37,10 @@ static NSString *XZMLAttributeTextParser(NSDictionary<NSAttributedStringKey, id>
     XZMLParserContext __block _context = { nil, attributes };
     
     XZMLDSL(XZMLString, ^XZMLElement(char const character) {
-        // 识别元素
         return [self shouldBeginElement:character];
     }, ^BOOL(XZMLElement const element, char const character) {
-        // 识别元素属性
         return [self element:element shouldBeginAttribute:character];
-    }, ^(XZMLElement const element) {
-        // 开始识别元素
+    }, ^(XZMLElement const element) { // 开始识别元素
         id const newAttributes = [_elementAttributes.lastObject mutableCopy] ?: [NSMutableDictionary dictionary];
         [_elementAttributes addObject:newAttributes];
         [_textAttributes addObject:[NSMutableDictionary dictionary]];
@@ -56,7 +57,7 @@ static NSString *XZMLAttributeTextParser(NSDictionary<NSAttributedStringKey, id>
             [textAttributes addEntriesFromDictionary:_elementAttributes.lastObject];
             [attributes enumerateKeysAndObjectsUsingBlock:^(NSAttributedStringKey  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
                 if ([key hasPrefix:@"XZML"]) {
-                    return;
+                    return; // 过滤 XZML 属性
                 }
                 if (textAttributes[key] == nil) {
                     textAttributes[key] = obj;
@@ -201,77 +202,62 @@ static NSMutableDictionary<NSString *, NSString *> *_fontNameAbbreviations = nil
 
 
 
-/// 设置字体：没有指定字体和字号，继承上层字号，使用默认字体。
-static BOOL XZMLParserSetFontWithDefault(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, UIFont *custom, UIFont *parent) {
-    if (custom == nil) {
-        return NO; // 与父元素字体字号相同
-    }
-    if (parent != nil) {
-        UIFont * const font = [custom fontWithSize:parent.pointSize];
-        attributes[NSFontAttributeName] = font;
-    } else {
-        attributes[NSFontAttributeName] = custom;
-    }
-    return YES;
-};
-
-/// 设置字体：仅指定了字号，继承上层字体，或使用默认字体。
-static BOOL XZMLParserSetFontWithSize(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, UIFont *custom, UIFont *parent, CGFloat size) {
-    if (parent != nil) {
-        attributes[NSFontAttributeName] = [parent fontWithSize:size];
-        return YES;
-    }
-    if (custom != nil) {
-        attributes[NSFontAttributeName] = [custom fontWithSize:size];
-        return YES;
-    }
-    return NO;
-};
-
-/// 设置字体：同时指定了字体和字号。
-static void XZMLParserSetFontWithNameSize(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, UIFont *custom, UIFont *parent, NSString *key, CGFloat size) {
-    NSString * const name = [XZMLParser fontNameForAbbreviation:key];
-    UIFont   * const font = [UIFont fontWithName:name size:size];
-    if (font != nil) {
-        attributes[NSFontAttributeName] = font;
-    } else if (!XZMLParserSetFontWithSize(attributes, custom, parent, size)) {
-        XZLog(@"警告：无法确定 name=%@, size=%.2f 字体，请通过 defaultAttributes 参数指定解析时的默认字体", name, size);
-    }
-};
-
-/// 设置字体：仅设置了字体名。
-static void XZMLParserSetFontWithName(NSMutableDictionary<NSAttributedStringKey, id> * const attributes, UIFont *custom, UIFont *parent, NSString *name) {
-    if (parent != nil) {
-        XZMLParserSetFontWithNameSize(attributes, custom, parent, name, parent.pointSize);
-    } else if (custom != nil) {
-        XZMLParserSetFontWithNameSize(attributes, custom, parent, name, custom.pointSize);
-    } else {
-        XZLog(@"警告：无法确定 %@ 字号，请在参数 defaultAttributes 中指定默认字体", name);
-    }
-};
-
-FOUNDATION_STATIC_INLINE UIColor *XZMLForegroundColorFromContext(const XZMLParserContext context, NSString *value) {
-    UIColor * const color = rgba(value, nil);
-    if (color) {
-        return color;
-    }
-    return context.elementAttributes[NSForegroundColorAttributeName] ? nil : (context.defaultAttributes[XZMLForegroundColorAttributeName] ?: context.defaultAttributes[NSForegroundColorAttributeName]);
-}
-
-FOUNDATION_STATIC_INLINE UIColor *XZMLBackgroundColorFromContext(const XZMLParserContext context, NSString *value) {
-    UIColor * const color = rgba(value, nil);
-    if (color) {
-        return color;
-    }
-    return context.elementAttributes[NSBackgroundColorAttributeName] ? nil : (context.defaultAttributes[XZMLBackgroundColorAttributeName] ?: context.defaultAttributes[NSBackgroundColorAttributeName]);
-}
 
 #pragma mark - 样式解析
+
+FOUNDATION_STATIC_INLINE UIColor *XZMLForegroundColorFromContext(const XZMLParserContext context, NSString *value) {
+    // 解析指定颜色值
+    UIColor *color = rgba(value, nil);
+    if (color == nil) {
+        // 没有指定颜色值，使用预设颜色值
+        color = context.defaultAttributes[XZMLForegroundColorAttributeName];
+        if (color == nil) {
+            // 没有预设值，继承父元素
+            if (context.defaultAttributes[NSForegroundColorAttributeName]) {
+                return nil;
+            }
+            // 使用默认值
+            return context.defaultAttributes[NSForegroundColorAttributeName];
+        }
+    }
+    return color;
+}
+
+/// 只有在 xzml 中表明了 backgroundColor 的情况下，即有 @ 符号时，才能用此方法解析。
+FOUNDATION_STATIC_INLINE UIColor *XZMLBackgroundColorFromContext(const XZMLParserContext context, NSString *value) {
+    if (value.length < 3) {
+        return context.defaultAttributes[XZMLForegroundColorAttributeName];
+    }
+    
+    UIColor *color = rgba(value, nil);
+    
+    if (color == nil) {
+        return context.defaultAttributes[XZMLForegroundColorAttributeName];
+        // 没有指定颜色值，使用预设颜色值
+        color = context.defaultAttributes[XZMLBackgroundColorAttributeName];
+        if (color == nil) {
+            // 没有预设值，继承父元素
+            if (context.defaultAttributes[NSBackgroundColorAttributeName]) {
+                return nil;
+            }
+            // 使用默认值
+            return context.defaultAttributes[NSBackgroundColorAttributeName];
+        }
+    }
+    return color;
+}
 
 XZMLReadingOptions XZMLAttributeColorParser(const XZMLParserContext context, XZMLElement const element, NSString * const value) {
     if ([value containsString:@"@"]) {
         NSArray<NSString *> * const values = [value componentsSeparatedByString:@"@"];
         
+        if (values[0].length == 0) {
+            if (values[1].length == 0) {
+                if (values.count) {
+                    <#statements#>
+                }
+            }
+        }
         UIColor * const foregroundColor = XZMLForegroundColorFromContext(context, values[0]);
         if (foregroundColor) {
             context.elementAttributes[NSForegroundColorAttributeName] = foregroundColor;
@@ -290,70 +276,103 @@ XZMLReadingOptions XZMLAttributeColorParser(const XZMLParserContext context, XZM
     return XZMLReadingAll;
 }
 
+/// 字体：xzml > XZMLFontAttributeName > parent > default
+/// 字号：xzml > parent > XZMLFontAttributeName > default
 FOUNDATION_STATIC_INLINE UIFont * _Nullable XZMLFontFromContext(const XZMLParserContext context, NSString * _Nullable nameString, NSString * _Nullable sizeString) {
     NSString *name = nil;
-    CGFloat size = 0;
-    UIFont *font = nil;
+    CGFloat   size = 0;
+    UIFont   *font = nil;
     
+    // 没有指定字体和字号
     if (nameString.length == 0 && sizeString.length == 0) {
-    bad_name_size: // name/size 都不合法
-        if (context.elementAttributes[NSFontAttributeName]) {
-            return nil; // 使用父元素字体
+    NO_NAME_SIZE:
+        // 没有指定字体，使用预设字体
+        font = context.defaultAttributes[XZMLFontAttributeName];
+        if (font) {
+            // 没有指定字号时，优先使用父元素的字号
+            UIFont *parentFont = context.elementAttributes[XZMLFontAttributeName];
+            if (parentFont) {
+                return [font fontWithSize:parentFont.pointSize];
+            }
+            // 使用预设字号
+            return font;
         }
-        return context.defaultAttributes[XZMLFontAttributeName] ?: context.defaultAttributes[NSFontAttributeName];
+        // 没有预设字体，使用父元素字体字号
+        if (context.elementAttributes[NSFontAttributeName]) {
+            return nil;
+        }
+        // 没有预设字体，父元素也没有字体，使用默认字体
+        font = context.defaultAttributes[NSFontAttributeName];
+#if DEBUG
+        if (font == nil) {
+            XZLog(@"[XZML] 解析字体失败，无法确定字体、字号");
+        }
+#endif
+        return font;
     }
     
+    // 没有指定字体
     if (nameString.length == 0) {
         size = sizeString.doubleValue;
         if (size <= 0 || isnan(size)) {
-            goto bad_name_size;
+            goto NO_NAME_SIZE;
         }
-    bad_name_only: // 仅 name 不合法
-        font = context.elementAttributes[NSFontAttributeName];
+    NO_NAME_ONLY:
+        // 没有指定字体，使用预设字体
+        font = context.defaultAttributes[XZMLFontAttributeName];
         if (font) {
-            if (font.pointSize == size) {
-                return nil;
-            }
             return [font fontWithSize:size];
         }
-        font = context.defaultAttributes[XZMLFontAttributeName] ?: context.defaultAttributes[NSFontAttributeName];
-        return [font fontWithSize:size];
-    }
-    
-    if (sizeString.length == 0) {
-    bad_size: // size 不合法，name 还未判断
-        name = [XZMLParser fontNameForAbbreviation:nameString];
+        // 没有预设字体，继承父元素字体
         font = context.elementAttributes[NSFontAttributeName];
         if (font) {
-            if ([name isEqualToString:font.familyName]) {
-                return nil;
-            }
-            font = [UIFont fontWithName:name size:font.pointSize];
-            if (font == nil) {
-                goto bad_name_size;
-            }
-            return font;
+            return [font fontWithSize:size];
         }
-        font = context.defaultAttributes[XZMLFontAttributeName] ?: context.defaultAttributes[NSFontAttributeName];
-        if (font == nil) {
-            return nil; // 不能确定 fontSize
-        }
-        CGFloat const size = font.pointSize;
-        font = [UIFont fontWithName:name size:size];
+        // 父元素没有字体，使用默认字体
+        font = context.defaultAttributes[NSFontAttributeName];
         if (font) {
-            return font;
+            return [font fontWithSize:size];
         }
-        return [UIFont systemFontOfSize:size]; // 不能确定 fontName 使用系统字体
+        // 没有默认字体，使用系统字体
+        XZLog(@"[XZML] 无法确定字体，使用系统字体");
+        return [UIFont systemFontOfSize:size];
+    }
+    
+    // 没有指定字号
+    if (sizeString.length == 0) {
+    NO_SIZE:
+        name = [XZMLParser fontNameForAbbreviation:nameString];
+        // 从父元素继承字号
+        font = context.elementAttributes[NSFontAttributeName];
+        if (font == nil) {
+            // 没有父元素字号，使用预设字号
+            font = context.defaultAttributes[XZMLFontAttributeName];
+            if (font == nil) {
+                // 没有预设字号，否则默认字号
+                font = context.defaultAttributes[NSFontAttributeName];
+                if (font == nil) {
+                    XZLog(@"[XZML] 解析字体失败，无法确定字号");
+                    return nil;
+                }
+            }
+        } else if ([name isEqualToString:font.familyName]) {
+            // 从父元素继承字号，且是同一字体
+            return nil;
+        }
+        // 确定了字号
+        size = font.pointSize;
+        goto TRY_NAME_SIZE;
     }
     
     size = sizeString.doubleValue;
     if (size <= 0 || isnan(size)) {
-        goto bad_size;
+        goto NO_SIZE;
     }
+TRY_NAME_SIZE:
     name = [XZMLParser fontNameForAbbreviation:nameString];
     font = [UIFont fontWithName:name size:size];
     if (font == nil) {
-        goto bad_name_only; // 名字不合法
+        goto NO_NAME_ONLY; // 名字不合法
     }
     return font;
 }
@@ -361,9 +380,6 @@ FOUNDATION_STATIC_INLINE UIFont * _Nullable XZMLFontFromContext(const XZMLParser
 XZMLReadingOptions XZMLAttributeFontParser(const XZMLParserContext context, XZMLElement const element, NSString * const value) {
     if ([value containsString:@"@"]) {
         NSArray<NSString *> * const values = [value componentsSeparatedByString:@"@"];
-        
-        NSString * const name = values[0];
-        CGFloat    const size = values[1].floatValue;
         
         UIFont * font = XZMLFontFromContext(context, values[0], values[1]);
         if (font) {
@@ -378,7 +394,7 @@ XZMLReadingOptions XZMLAttributeFontParser(const XZMLParserContext context, XZML
             }
         }
     } else {
-        // 仅指定了一个参数，当作
+        // 仅指定了一个参数，优先作为字体名使用
         UIFont * font = XZMLFontFromContext(context, value, nil) ?: XZMLFontFromContext(context, nil, value);
         if (font) {
             context.elementAttributes[NSFontAttributeName] = font;
@@ -387,30 +403,30 @@ XZMLReadingOptions XZMLAttributeFontParser(const XZMLParserContext context, XZML
     return XZMLReadingAll;
 }
 
+/// 暂不支持通过 defaultAttributes 提供默认值。
 XZMLReadingOptions XZMLAttributeDecorationParser(const XZMLParserContext context, XZMLElement const element, NSString * const value) {
-    NSInteger style = 0;                             // 样式
-    NSUnderlineStyle lines = NSUnderlineStyleSingle; // 线型
-    UIColor *color = nil;                            // 颜色
+    NSInteger style = 0;                             // 样式 0 删除线 1 下划线
+    NSUnderlineStyle lines = NSUnderlineStyleSingle; // 线型 0 单线条 1 双线条 2 粗线条
+    UIColor *color = nil;                            // 颜色 _ 默认色 x 指定色
     
     if ([value containsString:@"@"]) {
         NSArray<NSString *> * const values = [value componentsSeparatedByString:@"@"];
-        NSUInteger const count = values.count;
         
         style = values[0].integerValue;
-        if (count >= 2) {
-            switch (values[1].integerValue) {
-                case 1:
-                    lines = NSUnderlineStyleDouble;
-                    break;
-                case 2:
-                    lines = NSUnderlineStyleThick;
-                    break;
-                default:
-                    lines = NSUnderlineStyleSingle;
-                    break;
-            }
+        
+        switch (values[1].integerValue) {
+            case 1:
+                lines = NSUnderlineStyleDouble;
+                break;
+            case 2:
+                lines = NSUnderlineStyleThick;
+                break;
+            default:
+                lines = NSUnderlineStyleSingle;
+                break;
         }
-        if (count >= 3) {
+        
+        if (values.count > 2) {
             color = rgba(values[2], nil);
         }
     } else {
@@ -441,38 +457,28 @@ XZMLReadingOptions XZMLAttributeDecorationParser(const XZMLParserContext context
 XZMLReadingOptions XZMLAttributeSecurityParser(const XZMLParserContext context, XZMLElement const element, NSString * const value) {
     // 只有安全模式下，才需要解析安全字符样式
     if ([context.defaultAttributes[XZMLSecurityModeAttributeName] boolValue]) {
-        // 标记这是一个安全样式元素
-        context.elementAttributes[XZMLAttributeSecurityElementAttributeName] = @(YES);
-        
         if ([value containsString:@"@"]) {
             NSArray<NSString *> * const values = [value componentsSeparatedByString:@"@"];
             
             NSString * const mark = values[0];
-            if (mark.length > 0) {
-                context.elementAttributes[XZMLSecurityMarkAttributeName] = mark;
-            }
+            context.elementAttributes[XZMLSecurityMarkAttributeName] = mark.length > 0 ? mark : @"*";
             
             NSInteger const repeat = values[1].integerValue;
             if (repeat > 0) {
                 context.elementAttributes[XZMLSecurityRepeatAttributeName] = @(repeat);
                 return XZMLReadingNone;
             }
-        } else {
-            NSString * const mark = value;
-            if (mark.length > 0) {
-                context.elementAttributes[XZMLSecurityMarkAttributeName] = mark;
-                // 多字符的安全符，默认重复 1 次
-                if ([mark rangeOfComposedCharacterSequenceAtIndex:0].length < mark.length) {
-                    context.elementAttributes[XZMLSecurityRepeatAttributeName] = @(1);
-                    return XZMLReadingNone;
-                }
+        } else if (value.length > 0) {
+            context.elementAttributes[XZMLSecurityMarkAttributeName] = value;
+            // 多字符的安全符，以字符计算，而不是字节数，默认重复 1 次
+            if ([value rangeOfComposedCharacterSequenceAtIndex:0].length < value.length) {
+                context.elementAttributes[XZMLSecurityRepeatAttributeName] = @(1);
+                return XZMLReadingNone;
             }
-            return XZMLReadingText;
+        } else {
+            context.elementAttributes[XZMLSecurityMarkAttributeName] = @"*";
         }
         
-        if ([context.elementAttributes[XZMLSecurityRepeatAttributeName] unsignedIntValue] > 0) {
-            return XZMLReadingNone;
-        }
         return XZMLReadingText;
     }
     // 非安全模式，不需要解析安全属性
@@ -609,9 +615,10 @@ XZMLReadingOptions XZMLAttributeParagraphParser(const XZMLParserContext context,
     return XZMLReadingAll;
 }
 
+/// attributes 可能包含 XZMLSecurityMarkAttributeName/XZMLSecurityRepeatAttributeName 键
 NSString *XZMLAttributeTextParser(NSDictionary<NSAttributedStringKey, id> *attributes, NSString *text) {
-    if ([attributes[XZMLAttributeSecurityElementAttributeName] boolValue]) {
-        NSString * const mark = attributes[XZMLSecurityMarkAttributeName] ?: @"*";
+    NSString * const mark = attributes[XZMLSecurityMarkAttributeName];
+    if (mark) {
         NSInteger const repeat = [attributes[XZMLSecurityRepeatAttributeName] integerValue];
         NSInteger const length = mark.length * (repeat > 0 ? repeat : text.length);
         return [mark stringByPaddingToLength:length withString:mark startingAtIndex:0];

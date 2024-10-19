@@ -33,7 +33,6 @@ Pod::Spec.new do |s|
   
   s.dependency 'XZDefines/XZMacro'
   s.dependency 'XZExtensions/UIColor'
-  s.dependency 'XZExtensions/NSString'
   
   s.subspec 'Code' do |ss|
     ss.source_files = 'XZML/Code/**/*.{h,m}'

@@ -13,30 +13,37 @@ NS_ASSUME_NONNULL_BEGIN
 /// @attention 新增枚举请同时调整 NSCharacterSet.XZMLReservedCharacterSet 字符集。
 enum : XZMLAttribute {
     
-    /// 颜色样式：文本前景色、文本背景色。
-    /// 格式：前景色、@背景色、前景色@背景色
-    /// @discussion 颜色使用十六进制 RGB/RGBA 值。
-    /// @discussion 1、仅前景色（无`@`符号）时，表示仅设置前景色，背景色继承上层。
-    /// @discussion 2、无前景色（有`@`符号）时，表示仅设置背景色，前景色继承上层。
-    /// @discussion 3、其它情形，表示示同时指定前景色和背景色。
-    /// @discussion 4、解析颜色时，以`defaultAttributes`设置的值作为默认值，如没有设置默认值，则不处理。
-    /// @discussion 5、通过键名 XZMLForegroundColorAttributeName、XZMLBackgroundColorAttributeName 设置默认值。
+    /// 颜色样式：文本前景色、文本背景色。颜色使用十六进制 RGB/RGBA 值。
+    ///
+    /// 属性值支持一下格式：
+    /// - `#`，表示设置前景色为预设值
+    /// - `RGB#`，表示设置前景色为 RGB 值
+    /// - `@RGB#`，表示仅设置前景色为预设值，背景色为 RGB 值
+    /// - `RGB@#`，表示设置前景色为 RGB 值，背景色为预设值
+    /// - `RGB@RGB#`，表示设置前景色为 RGB 值，背景色为预设 RGB 值
+    /// - `@#`，表示设置前景色和背景色都为预设值
+    ///
+    /// - Note: 预设值：通过键XZMLForegroundColorAttributeName与键XZMLBackgroundColorAttributeName在`attributes`参数中预设的值。
     XZMLAttributeColor = '#',
     
-    /// 字体样式：字体、字号、样式。
+    /// 字体样式：字体、字号、偏移。
+    ///
     /// 格式：字体、@字号、字体@字号、字体@字号@基准线偏移
-    /// @discussion 使用 XZMLFontAttributeName 设置解析时的默认字号。
-    /// @discussion 1、仅指定字体时，按根据上层字体、默认解析字体、默认字体的先后顺序继承字号，找不到字号不处理；
-    /// @discussion 2、仅指定字号时，按根据上层字体、默认解析字体、默认字体的先后顺序继承字体，找不到字体不处理；
-    /// @discussion 3、同时指定字体字号时，如果无法生成字体，那么回退到仅字号的情形处理；
-    /// @discussion 4、使用 +setFoneName:forAbbreviation: 方法注册字体名缩写，以减少`XZML`的长度。
-    /// @note 推荐字体缩写约定
-    /// @discussion 1、数字常规：DR、D
-    /// @discussion 2、数字粗体：DB、B
-    /// @discussion 3、文本细体：TL、L
-    /// @discussion 4、文本常规：TR、T
-    /// @discussion 5、文本中等：TM、M
-    /// @discussion 6、文本中粗：TS、S
+    ///
+    /// 取值优先级：指定值 > 预设值 > 父元素 > 默认值
+    ///
+    /// - Note: 指定值：通过 XZML 指定的值。
+    /// - Note: 预设值：通过键XZMLFontAttributeName在`attributes`参数中预设的值。
+    ///
+    /// 推荐使用 `+setFoneName:forAbbreviation:` 方法注册字体名缩写，以减少`XZML`的长度。
+    ///
+    /// 字体缩写约定：
+    /// - 1、数字常规：DR、D
+    /// - 2、数字粗体：DB、B
+    /// - 3、文本细体：TL、L
+    /// - 4、文本常规：TR、T
+    /// - 5、文本中等：TM、M
+    /// - 6、文本中粗：TS、S
     XZMLAttributeFont = '&',
     
     /// 文本修饰样式。
@@ -120,25 +127,25 @@ typedef struct XZMLParserContext {
 
 // MARK: - 子类可通过重写如下方法来自定义解析过程
 
-/// 字符 character 是否为元素起始符，即，能否开始元素的解析。
-/// - 返回 XZMLElementNotAnElement 表示 character 不是元素的起始字符；
-/// - 返回其它值，表示以该值作为元素结束符，开始元素的识别。
-/// - Parameter character: 待判断是否为元素起始符的字符
+/// 判断字符 character 是否为元素起始符。
+/// 1. 如果 character 是元素起始符号，那么应返回该元素的结束符号。
+/// 2. 返回 XZMLElementNotAnElement 表示这不是一个元素开始符号。
+/// - Parameter character: 待判断的字符
 + (XZMLElement)shouldBeginElement:(char)character;
 
-/// 在元素 element 中是否遇识别到样式标记符号。
+/// 判断字符 character 是否为元素 element 的样式属性符号。
 /// - Parameters:
 ///   - element: 当前正识别中的元素
 ///   - character: 待判断是否为样式标记符的字符
 + (BOOL)element:(XZMLElement)element shouldBeginAttribute:(char)character;
 
-/// 开启解析元素。
+/// 元素解析开始。
 /// - Parameters:
 ///   - element: 被解析的元素的标记
 ///   - attributes: 元素的样式属性
 + (void)didBeginElement:(XZMLElement)element context:(const XZMLParserContext)context;
 
-/// 已识别出元素中的样式。
+/// 解析出样式。
 /// - Note: 在识别属性的过程中，特定的属性，可以提前终止元素的解析，比如安全字符替换。
 /// - Parameters:
 ///   - element: 识别中的元素
@@ -148,15 +155,16 @@ typedef struct XZMLParserContext {
 /// - Returns: 当前元素后续的解析方式
 + (XZMLReadingOptions)element:(XZMLElement)element foundAttribute:(XZMLAttribute)attribute value:(NSString *)value context:(const XZMLParserContext)context;
 
-/// 已识别文本。
+/// 解析出文本。
 /// - Parameters:
-///   - element: 当前识别中的元素
+///   - element: 当前识别中的元素，也可能是非元素文本。
 ///   - text: 已识别出的文本
-///   - fragment: 文本可能会被子元素分割，该参数表明当前文本是其中的是第几段
+///   - fragment: 文本可能会被子元素分割成多段，该参数表明当前文本是其中的是第几段
 ///   - attributes: 富文本属性
+/// - Returns: 返回的富文本将拼接到结果中
 + (nullable NSAttributedString *)element:(XZMLElement)element foundText:(NSString *)text fragment:(NSUInteger)fragment attributes:(nullable NSDictionary<NSAttributedStringKey,id> *)attributes;
 
-/// 元素识别结束
+/// 元素解析结束。
 /// - Parameter element: 当前识别中的元素
 /// - Parameter attributes: 元素的样式属性
 + (void)didEndElement:(XZMLElement)element context:(const XZMLParserContext)context;

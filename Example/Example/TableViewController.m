@@ -26,7 +26,7 @@
             @{
                 @"title": @"超链接",
                 @"xzml": (^() {
-                    NSString *urlString = @"https://www.baidu.com/s?wd=XZML&ua=app#home".xz_stringByAddingURIEncoding.stringByEscapingXZMLReservedCharacters;
+                    NSString *urlString = @"https://www.baidu.com/s?wd=XZML&ua=app#home".stringByEscapingXZMLReservedCharacters;
                     return [NSString stringWithFormat:@"<%@~F00#S@20&百度一下> <T@20&333#你就知道>", urlString];
                 })()
             }
