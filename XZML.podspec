@@ -8,8 +8,8 @@
 
 Pod::Spec.new do |s|
   s.name             = 'XZML'
-  s.version          = '1.0.0'
-  s.summary          = 'XZML 富文本描述语言'
+  s.version          = '2.0.0'
+  s.summary          = 'XZML 富文本标记语言'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-                       通过 XZML 可以快速的通过字符串直接构造富文本，方便快捷直接。
+  XZML 是一款轻量级的 iOS 富文本解决方案，可以快速方便的直接通过字符串构造富文本，用于解决 iOS 开发中，构造富文本繁琐，及不能直接下发富文本的问题。
                        DESC
 
   s.homepage         = 'https://github.com/Xezun/XZML'
@@ -28,14 +28,15 @@ Pod::Spec.new do |s|
   s.source           = { :git => 'https://github.com/Xezun/XZML.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '11.0'
+  s.ios.deployment_target = '12.0'
   s.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'XZ_FRAMEWORK=1' }
+  
+  s.dependency 'XZDefines/XZMacro'
   s.dependency 'XZExtensions/UIColor'
-  s.dependency 'XZExtensions/NSString'
   
   s.subspec 'Code' do |ss|
     ss.source_files = 'XZML/Code/**/*.{h,m}'
-    # ss.project_header_files = 'XZML/Code/**/Private/*.{h,m}'
+    ss.private_header_files = 'XZML/Code/**/Core/*.h'
   end
   
   # s.resource_bundles = {

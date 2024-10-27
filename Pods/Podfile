@@ -10,9 +10,9 @@ target 'Example' do
 
   pod 'XZML', :path => '../'
 
-  pod 'SDWebImage'
-  pod 'YYModel'
-  pod 'AFNetworking'
+  #pod 'SDWebImage'
+  #pod 'XZJSON'
+  #pod 'AFNetworking'
   
   target 'ExampleTests' do
     inherit! :search_paths

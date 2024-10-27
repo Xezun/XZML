@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		01C91114C6D30DAA909EB169 /* Pods_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 055F0304DE9A092BAF52FF06 /* Pods_Example.framework */; };
+		043F63072CC0E29E00310025 /* SelectFontNameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 043F63062CC0E29E00310025 /* SelectFontNameViewController.m */; };
+		043F630A2CC0E91B00310025 /* SettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 043F63092CC0E91B00310025 /* SettingsViewController.m */; };
+		043F630D2CC0F81500310025 /* SelectFontSizeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 043F630C2CC0F81500310025 /* SelectFontSizeViewController.m */; };
 		29648BE52A72556C0090F445 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 29648BE42A72556C0090F445 /* AppDelegate.m */; };
 		29648BE82A72556C0090F445 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 29648BE72A72556C0090F445 /* SceneDelegate.m */; };
 		29648BEB2A72556C0090F445 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 29648BEA2A72556C0090F445 /* ViewController.m */; };
@@ -18,6 +21,7 @@
 		29648C002A72556E0090F445 /* ExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 29648BFF2A72556E0090F445 /* ExampleTests.m */; };
 		29648C0A2A72556E0090F445 /* ExampleUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 29648C092A72556E0090F445 /* ExampleUITests.m */; };
 		29648C0C2A72556E0090F445 /* ExampleUITestsLaunchTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 29648C0B2A72556E0090F445 /* ExampleUITestsLaunchTests.m */; };
+		29D4D9D12CBEDE71001B9DF9 /* TableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 29D4D9D02CBEDE71001B9DF9 /* TableViewController.m */; };
 		C556594B20BE3573AE3127B1 /* Pods_ExampleUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2921DE5FDDA8FC1A0BE46778 /* Pods_ExampleUITests.framework */; };
 		E1C58D6269A64FE5F22C16D7 /* Pods_ExampleTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D09F7711B7EC5E200D1D4920 /* Pods_ExampleTests.framework */; };
 /* End PBXBuildFile section */
@@ -40,6 +44,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		043F63052CC0E29E00310025 /* SelectFontNameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SelectFontNameViewController.h; sourceTree = "<group>"; };
+		043F63062CC0E29E00310025 /* SelectFontNameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SelectFontNameViewController.m; sourceTree = "<group>"; };
+		043F63082CC0E91B00310025 /* SettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsViewController.h; sourceTree = "<group>"; };
+		043F63092CC0E91B00310025 /* SettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsViewController.m; sourceTree = "<group>"; };
+		043F630B2CC0F81500310025 /* SelectFontSizeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SelectFontSizeViewController.h; sourceTree = "<group>"; };
+		043F630C2CC0F81500310025 /* SelectFontSizeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SelectFontSizeViewController.m; sourceTree = "<group>"; };
 		055F0304DE9A092BAF52FF06 /* Pods_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2921DE5FDDA8FC1A0BE46778 /* Pods_ExampleUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ExampleUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		29648BE02A72556C0090F445 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -59,6 +69,8 @@
 		29648C052A72556E0090F445 /* ExampleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExampleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		29648C092A72556E0090F445 /* ExampleUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleUITests.m; sourceTree = "<group>"; };
 		29648C0B2A72556E0090F445 /* ExampleUITestsLaunchTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleUITestsLaunchTests.m; sourceTree = "<group>"; };
+		29D4D9CF2CBEDE71001B9DF9 /* TableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TableViewController.h; sourceTree = "<group>"; };
+		29D4D9D02CBEDE71001B9DF9 /* TableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TableViewController.m; sourceTree = "<group>"; };
 		369E27212BC7DC1424D69BB0 /* Pods-Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.release.xcconfig"; path = "Target Support Files/Pods-Example/Pods-Example.release.xcconfig"; sourceTree = "<group>"; };
 		5E63F9B7AB013AABEE95EC05 /* Pods-ExampleTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ExampleTests.release.xcconfig"; path = "Target Support Files/Pods-ExampleTests/Pods-ExampleTests.release.xcconfig"; sourceTree = "<group>"; };
 		973629BBA2CF064ED1925071 /* Pods-ExampleTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ExampleTests.debug.xcconfig"; path = "Target Support Files/Pods-ExampleTests/Pods-ExampleTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -125,8 +137,16 @@
 				29648BE42A72556C0090F445 /* AppDelegate.m */,
 				29648BE62A72556C0090F445 /* SceneDelegate.h */,
 				29648BE72A72556C0090F445 /* SceneDelegate.m */,
+				29D4D9CF2CBEDE71001B9DF9 /* TableViewController.h */,
+				29D4D9D02CBEDE71001B9DF9 /* TableViewController.m */,
 				29648BE92A72556C0090F445 /* ViewController.h */,
 				29648BEA2A72556C0090F445 /* ViewController.m */,
+				043F63082CC0E91B00310025 /* SettingsViewController.h */,
+				043F63092CC0E91B00310025 /* SettingsViewController.m */,
+				043F63052CC0E29E00310025 /* SelectFontNameViewController.h */,
+				043F63062CC0E29E00310025 /* SelectFontNameViewController.m */,
+				043F630B2CC0F81500310025 /* SelectFontSizeViewController.h */,
+				043F630C2CC0F81500310025 /* SelectFontSizeViewController.m */,
 				29648BEC2A72556C0090F445 /* Main.storyboard */,
 				29648BEF2A72556E0090F445 /* Assets.xcassets */,
 				29648BF12A72556E0090F445 /* LaunchScreen.storyboard */,
@@ -398,9 +418,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				29648BEB2A72556C0090F445 /* ViewController.m in Sources */,
+				043F63072CC0E29E00310025 /* SelectFontNameViewController.m in Sources */,
+				043F630D2CC0F81500310025 /* SelectFontSizeViewController.m in Sources */,
 				29648BE52A72556C0090F445 /* AppDelegate.m in Sources */,
 				29648BF62A72556E0090F445 /* main.m in Sources */,
+				29D4D9D12CBEDE71001B9DF9 /* TableViewController.m in Sources */,
 				29648BE82A72556C0090F445 /* SceneDelegate.m in Sources */,
+				043F630A2CC0E91B00310025 /* SettingsViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -506,7 +530,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -558,7 +582,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -574,9 +598,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = DRRPBNFZ6Z;
+				DEVELOPMENT_TEAM = LWKDD4DJ6H;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Example/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = XZKit;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -587,7 +612,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.xezun.demo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xezun.XZML;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -602,9 +627,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = DRRPBNFZ6Z;
+				DEVELOPMENT_TEAM = LWKDD4DJ6H;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Example/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = XZKit;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -615,7 +641,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.xezun.demo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xezun.XZML;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -630,7 +656,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.xezun.ExampleTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -648,7 +673,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.xezun.ExampleTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
